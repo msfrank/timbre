@@ -5,16 +5,16 @@ from conan.tools.apple import is_apple_os
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
 from conan.tools.files import copy, get, unzip
 
-GRPC_URL = "https://github.com/grpc/grpc/archive/refs/tags/v1.59.3.tar.gz"
-GRPC_DOWNLOAD_NAME = "grpc-1.59.3.tar.gz"
-GRPC_SOURCE_DIR = "grpc-1.59.3"
+GRPC_URL = "https://github.com/grpc/grpc/archive/refs/tags/v1.62.0.tar.gz"
+GRPC_DOWNLOAD_NAME = "grpc-1.62.0.tar.gz"
+GRPC_SOURCE_DIR = "grpc-1.62.0"
 
 GOOGLETEST_URL = 'https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz'
 GOOGLETEST_DOWNLOAD_NAME = "googletest-1.14.0.tar.gz"
 
 class GrpcDevel(ConanFile):
     name = "grpc"
-    version = "1.59.3"
+    version = "1.62.0"
     user = "timbre"
     url = "https://grpc.io"
     description = """
@@ -33,7 +33,7 @@ in any environment.
         self.requires("gflags/2.2.1@timbre")
         self.requires('gtest/1.14.0@timbre')
         self.requires("openssl/3.2.0@timbre")
-        self.requires("protobuf/25.1@timbre")
+        self.requires("protobuf/25.3@timbre")
         self.requires("re2/20210901.1@timbre")
 
     def source(self):

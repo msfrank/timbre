@@ -2,6 +2,7 @@ from os.path import join
 from platform import system
 
 from conan import ConanFile
+from conan.tools.apple import fix_apple_shared_install_name
 from conan.tools.build import build_jobs
 from conan.tools.files import copy, get, unzip
 from conan.tools.env import Environment, VirtualRunEnv
@@ -64,6 +65,7 @@ is widely used by Internet servers, including the majority of HTTPS websites.
         copy(self, "*", join(install_prefix, 'lib64'), join(self.package_folder,"lib64"))
         copy(self, "*", join(install_prefix, 'include'), join(self.package_folder,"include"))
         copy(self, "*", join(install_prefix, 'ssl'), join(self.package_folder,"share"))
+        fix_apple_shared_install_name(self)
 
     def package_info(self):
         self.cpp_info.libs = [ "ssl", "crypto" ]

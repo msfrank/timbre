@@ -4,13 +4,13 @@ from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
 from conan.tools.files import copy, get, unzip
 
-PROTOBUF_URL = "https://github.com/protocolbuffers/protobuf/releases/download/v25.1/protobuf-25.1.tar.gz"
-PROTOBUF_DOWNLOAD_NAME = "protobuf-25.1.tar.gz"
-PROTOBUF_SOURCE_DIR = "protobuf-25.1"
+PROTOBUF_URL = "https://github.com/protocolbuffers/protobuf/releases/download/v25.3/protobuf-25.3.tar.gz"
+PROTOBUF_DOWNLOAD_NAME = "protobuf-25.3.tar.gz"
+PROTOBUF_SOURCE_DIR = "protobuf-25.3"
 
 class Protobuf(ConanFile):
     name = "protobuf"
-    version = "25.1"
+    version = "25.3"
     user = "timbre"
     url = "https://protobuf.dev"
     description = """
