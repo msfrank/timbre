@@ -12,7 +12,7 @@ GRPC_SOURCE_DIR = "grpc-1.62.0"
 GOOGLETEST_URL = 'https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz'
 GOOGLETEST_DOWNLOAD_NAME = "googletest-1.14.0.tar.gz"
 
-class GrpcDevel(ConanFile):
+class Grpc(ConanFile):
     name = "grpc"
     version = "1.62.0"
     user = "timbre"
@@ -104,9 +104,12 @@ in any environment.
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
-        cmake.install()
 
     def package(self):
+        cmake = CMake(self)
+        cmake.install()
+        # copy generated protobuf headers to include/gens/ package directory
+        copy(self, "*", join(self.build_folder, "gens"), join(self.package_folder, "include", "gens"))
         # copy license file to share/ package directory
         copy(self, "LICENSE", self.source_folder, join(self.package_folder, "share"))
 
