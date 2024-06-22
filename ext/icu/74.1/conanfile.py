@@ -1,7 +1,7 @@
 from os.path import join
 
 from conan import ConanFile
-from conan.tools.apple import fix_apple_shared_install_name
+from conan.tools.apple import fix_apple_shared_install_name, is_apple_os
 from conan.tools.gnu import AutotoolsDeps, AutotoolsToolchain, Autotools
 from conan.tools.layout import basic_layout
 from conan.tools.files import copy, get, unzip
@@ -31,7 +31,9 @@ on all platforms and between C/C++ and Java software.
 
     def generate(self):
         tc = AutotoolsToolchain(self)
-        tc.configure_args.append('--enable-rpath')
+        #tc.configure_args.append('--enable-rpath')
+        rpath = "@loader_path" if is_apple_os(self) else "\$ORIGIN"
+        tc.extra_ldflags = ["-Wl,-rpath," + rpath]
         tc.generate()
         deps = AutotoolsDeps(self)
         deps.generate()
@@ -41,15 +43,12 @@ on all platforms and between C/C++ and Java software.
         autotools = Autotools(self)
         autotools.configure(build_script_folder=configure_dir)
         autotools.make()
-        autotools.install()
 
     def package(self):
-        copy(self, "*", join(self.build_folder, 'include'), join(self.package_folder, 'include'))
-        copy(self, "*", join(self.build_folder, 'lib'), join(self.package_folder, 'lib'))
-        copy(self, "*", join(self.build_folder, 'bin'), join(self.package_folder, 'include'))
-        copy(self, "*", join(self.build_folder, 'sbin'), join(self.package_folder, 'sbin'))
-        copy(self, "LICENSE", self.source_folder, join(self.package_folder, "share"), keep_path=False)
+        autotools = Autotools(self)
+        autotools.install()
         fix_apple_shared_install_name(self)
+        copy(self, "LICENSE", self.source_folder, join(self.package_folder, "share"), keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = [ "icudata", "icui18n", "icuio", "icutu", "icuuc" ]

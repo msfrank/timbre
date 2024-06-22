@@ -1,6 +1,7 @@
 from os.path import join
 
 from conan import ConanFile
+from conan.tools.apple import fix_apple_shared_install_name, is_apple_os
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
 from conan.tools.files import copy, get, unzip
 
@@ -31,6 +32,9 @@ pieces of Google’s internal codebase.
     def generate(self):
         tc = CMakeToolchain(self)
         tc.cache_variables['CMAKE_CXX_STANDARD'] = '17'
+        tc.cache_variables['CMAKE_INSTALL_RPATH_USE_LINK_PATH'] = 'ON'
+        tc.cache_variables['CMAKE_MACOSX_RPATH'] = 'ON'
+        tc.cache_variables["CMAKE_INSTALL_RPATH"] = "@loader_path" if is_apple_os(self) else "\$ORIGIN/"
         tc.generate()
         deps = CMakeDeps(self)
         deps.generate()
@@ -39,14 +43,11 @@ pieces of Google’s internal codebase.
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
-        cmake.install()
 
     def package(self):
-        copy(self, '*.h', self.build_folder, join(self.package_folder, 'include'))
-        copy(self, '*.so', self.build_folder, join(self.package_folder, 'lib'), keep_path=False)
-        copy(self, '*.dylib', self.build_folder, join(self.package_folder, 'lib'), keep_path=False)
-        copy(self, '*.a', self.build_folder, join(self.package_folder, 'lib'), keep_path=False)
-        copy(self, '*', join(self.build_folder, 'lib','cmake'), join(self.package_folder, 'lib', 'cmake'))
+        cmake = CMake(self)
+        cmake.install()
+        #fix_apple_shared_install_name(self)
         copy(self, 'LICENSE', self.source_folder, join(self.package_folder, 'share'))
 
     def package_info(self):

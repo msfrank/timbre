@@ -53,15 +53,8 @@ in any environment.
         tc.variables['CMAKE_POSITION_INDEPENDENT_CODE'] = 'ON'   # force PIC
         tc.variables['BUILD_SHARED_LIBS'] = 'ON'                 # force shared library build
         tc.variables['CMAKE_INSTALL_RPATH_USE_LINK_PATH'] = 'ON' # force append link paths to rpath
-
-        # set the install rpath correctly depending on the host system
-        if is_apple_os(self):
-            tc.variables['MACOSX_RPATH'] = 'ON'
-            tc.variables['CMAKE_INSTALL_RPATH'] = '@executable_path/../lib'
-        else:
-            tc.variables['CMAKE_INSTALL_RPATH'] = '\$ORIGIN/../lib'
-
-        tc.variables['BUILD_SHARED_LIBS'] = 'ON'                 # force shared library build
+        rpath = "@loader_path" if is_apple_os(self) else "\$ORIGIN"
+        tc.variables['CMAKE_INSTALL_RPATH'] = rpath + '/../lib'
 
         # set cmake definitions to allow grpc to find dependencies
         tc.variables['absl_DIR'] = self.dependencies['absl'].package_folder

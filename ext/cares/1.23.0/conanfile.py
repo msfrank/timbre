@@ -1,6 +1,7 @@
 from os.path import join
 
 from conan import ConanFile
+from conan.tools.apple import fix_apple_shared_install_name, is_apple_os
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
 from conan.tools.files import copy, get, unzip
 
@@ -34,6 +35,9 @@ c-ares is a C library for asynchronous DNS requests (including name resolves).
         tc.cache_variables['CARES_SHARED'] = 'ON'
         tc.cache_variables['CARES_STATIC_PIC'] = 'ON'
         tc.cache_variables['CARES_BUILD_TESTS'] = 'OFF'
+        tc.cache_variables['CMAKE_INSTALL_RPATH_USE_LINK_PATH'] = 'ON'
+        tc.cache_variables['CMAKE_MACOSX_RPATH'] = 'ON'
+        tc.cache_variables["CMAKE_INSTALL_RPATH"] = "@loader_path" if is_apple_os(self) else "\$ORIGIN/"
         tc.generate()
         deps = CMakeDeps(self)
         deps.generate()
@@ -42,15 +46,10 @@ c-ares is a C library for asynchronous DNS requests (including name resolves).
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
-        cmake.install()
 
     def package(self):
-        copy(self, '*.h', self.build_folder, join(self.package_folder,'include'))
-        copy(self, '*.dll', self.build_folder, join(self.package_folder,'bin'), keep_path=False)
-        copy(self, '*.so', self.build_folder, join(self.package_folder,'lib'), keep_path=False)
-        copy(self, '*.dylib', self.build_folder, join(self.package_folder,'lib'), keep_path=False)
-        copy(self, '*.a', self.build_folder, join(self.package_folder,'lib'), keep_path=False)
-        copy(self, 'lib/cmake', self.build_folder, join(self.package_folder,'lib','cmake'))
+        cmake = CMake(self)
+        cmake.install()
         copy(self, 'LICENSE.md', self.source_folder, join(self.package_folder,'share'))
 
     def package_info(self):

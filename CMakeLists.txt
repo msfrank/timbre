@@ -41,7 +41,7 @@ find_package(Java REQUIRED)
 find_program(Conan conan REQUIRED)
 
 # check the conan version
-execute_process(COMMAND Conan --version
+execute_process(COMMAND ${Conan} --version
     RESULT_VARIABLE CONAN_RESULT
     OUTPUT_VARIABLE CONAN_OUTPUT
     ERROR_VARIABLE CONAN_ERROR

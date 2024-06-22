@@ -2,7 +2,7 @@ from os.path import join
 from platform import system
 
 from conan import ConanFile
-from conan.tools.apple import fix_apple_shared_install_name
+from conan.tools.apple import fix_apple_shared_install_name, is_apple_os
 from conan.tools.build import build_jobs
 from conan.tools.files import copy, get, unzip
 from conan.tools.env import Environment, VirtualRunEnv
@@ -37,6 +37,8 @@ is widely used by Internet servers, including the majority of HTTPS websites.
         ms = VirtualRunEnv(self)
         ms.generate()
         env = Environment()
+        rpath = "@loader_path" if is_apple_os(self) else "\$ORIGIN/"
+        env.define("LDFLAGS", "-Wl,-rpath," + rpath)
         envvars = env.vars(self)
         envvars.save_script("openssl_env")
 
