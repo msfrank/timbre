@@ -1,5 +1,5 @@
 from os.path import join
-from platform import system
+from platform import machine, system
 
 from conan import ConanFile
 from conan.tools.apple import fix_apple_shared_install_name, is_apple_os
@@ -46,9 +46,10 @@ is widely used by Internet servers, including the majority of HTTPS websites.
         configure_script = join(self.source_folder, 'Configure')
         install_prefix = join(self.build_folder, 'install')
         system_name = system()
+        machine_type = machine()
         if system_name == 'Darwin':
-            configure_cmd = "%s --debug --prefix=%s darwin64-x86_64-cc threads shared zlib-dynamic no-tests no-docs" % (
-                configure_script, install_prefix)
+            configure_cmd = "%s --debug --prefix=%s darwin64-%s-cc threads shared zlib-dynamic no-tests no-docs" % (
+                configure_script, install_prefix, machine_type)
         elif system_name == 'Linux':
             configure_cmd = "%s --debug --prefix=%s threads shared zlib-dynamic no-tests no-docs" % (
                 configure_script, install_prefix)
