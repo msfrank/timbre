@@ -68,4 +68,3 @@ Command line tool and library for transferring data with URLs (since 1998).
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "none")
         self.cpp_info.builddirs.append(join("lib", "cmake", "CURL"))
-        self.conf_info.define('user.curl.license_file', join(self.package_folder, 'share', 'COPYING'))

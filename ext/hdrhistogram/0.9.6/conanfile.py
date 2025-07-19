@@ -44,8 +44,8 @@ HDR Histogram is designed for recoding histograms of value measurements in laten
         copy(self, "*.so", self.build_folder, join(self.package_folder, "lib"), keep_path=False)
         copy(self, "*.dylib", self.build_folder, join(self.package_folder, "lib"), keep_path=False)
         copy(self, "*.a", self.build_folder, join(self.package_folder, "lib"), keep_path=False)
+        # copy license file to share/ package directory
         copy(self, "LICENSE.txt", self.source_folder, join(self.package_folder, "share"))
 
     def package_info(self):
         self.cpp_info.libs = ["hdr_histogram"]
-        self.conf_info.define('user.hdrhistogram.license_file', join(self.package_folder, 'share', 'LICENSE.txt'))

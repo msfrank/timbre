@@ -50,8 +50,8 @@ c-ares is a C library for asynchronous DNS requests (including name resolves).
     def package(self):
         cmake = CMake(self)
         cmake.install()
+        # copy license file to share/ package directory
         copy(self, 'LICENSE.md', self.source_folder, join(self.package_folder,'share'))
 
     def package_info(self):
         self.cpp_info.libs = ['cares']
-        self.conf_info.define('user.cares.license_file', join(self.package_folder, 'share', 'LICENSE.md'))
