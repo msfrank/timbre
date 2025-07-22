@@ -15,14 +15,17 @@ RUN adduser jrandomhacker
 # switch current user
 USER jrandomhacker
 
-# change to home directory
-WORKDIR /home/jrandomhacker
+# generate a default Conan profile
+RUN conan profile detect
 
-# check out timbre repository
-ADD --exclude .git . /home/jrandomhacker/src/timbre
+# copy timbre repository into the image
+ADD --chown=jrandomhacker . /home/jrandomhacker/src/timbre
 
 # change to timbre repository directory
 WORKDIR /home/jrandomhacker/src/timbre
+
+# ensure existing buildsystem is removed if it exists
+RUN rm -rf build
 
 # generate the buildsystem
 RUN cmake -B build

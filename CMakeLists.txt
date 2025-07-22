@@ -130,7 +130,7 @@ function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
     set(CREATE_TARGET_NAME "create_${PACKAGE_NAME}_${PACKAGE_VERSION}")
     add_custom_target (
         ${CREATE_TARGET_NAME}
-        COMMAND ${CONAN} create ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py --build=missing
+        COMMAND ${CONAN} create ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py --build=missing --no-remote
         COMMENT "creating package ${PACKAGE_NAME}-${PACKAGE_VERSION}"
         SOURCES ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
     )
