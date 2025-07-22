@@ -40,6 +40,9 @@ find_package(LibXml2 REQUIRED)
 # find java installation
 find_package(Java REQUIRED)
 
+# find python installation
+find_package (Python3 COMPONENTS Interpreter)
+
 # find conan package manager
 find_program(Conan conan REQUIRED)
 
@@ -83,6 +86,8 @@ else()
     set(CONAN ${Conan})
 endif ()
 
+set(PYTHON3 ${Python3_EXECUTABLE})
+
 
 #######################################################################
 #
@@ -100,10 +105,11 @@ add_custom_target(create-all-packages)
 #
 #######################################################################
 
-set(DECLARED_EXPORT_TARGETS "" CACHE INTERNAL "declared export targets" FORCE)
+set(DECLARED_CREATE_TARGETS "" CACHE INTERNAL "declared create targets" FORCE)
 
 function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
 
+    # declare the export_<package-name>_<package-version> target
     set(EXPORT_TARGET_NAME "export_${PACKAGE_NAME}_${PACKAGE_VERSION}")
     if(${CONAN_PACKAGE_CHANNEL})
         add_custom_target (
@@ -120,13 +126,11 @@ function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
             SOURCES ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
         )
     endif()
+
+    # add export target as a dependency of the export-all-packages target
     add_dependencies(export-all-packages ${EXPORT_TARGET_NAME})
 
-    set(export_targets_list ${DECLARED_EXPORT_TARGETS})
-    list(APPEND export_targets_list ${EXPORT_TARGET_NAME})
-    set(DECLARED_EXPORT_TARGETS ${export_targets_list} CACHE INTERNAL "declared export targets" FORCE)
-
-    #
+    # declare the create_<package-name>_<package-version> target
     set(CREATE_TARGET_NAME "create_${PACKAGE_NAME}_${PACKAGE_VERSION}")
     add_custom_target (
         ${CREATE_TARGET_NAME}
@@ -134,9 +138,15 @@ function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
         COMMENT "creating package ${PACKAGE_NAME}-${PACKAGE_VERSION}"
         SOURCES ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
     )
+
+    # add create target as a dependency of the export-all-packages target
     add_dependencies(create-all-packages ${CREATE_TARGET_NAME})
 
-    message(STATUS "declared export target ${PACKAGE_NAME}-${PACKAGE_VERSION}")
+    set(create_targets_list ${DECLARED_CREATE_TARGETS})
+    list(APPEND create_targets_list ${CREATE_TARGET_NAME})
+    set(DECLARED_CREATE_TARGETS ${create_targets_list} CACHE INTERNAL "declared create targets" FORCE)
+
+    message(STATUS "declared package ${PACKAGE_NAME}-${PACKAGE_VERSION}")
 
 endfunction()
 
@@ -148,3 +158,44 @@ endfunction()
 #######################################################################
 
 add_subdirectory(ext)
+
+
+#######################################################################
+#
+# generate Dockerfile for building package targets
+#
+#######################################################################
+
+set(DOCKERFILE_CONFIGURE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docker/Dockerfile.timbre-configure")
+set(DOCKERFILE_CONFIGURE_IMAGE "timbre-configure:latest")
+set(DOCKERFILE_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/Dockerfile.timbre-build")
+
+set(GENERATE_DOCKERFILE_BUILD_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/generate_dockerfile_build.py")
+
+file(CONFIGURE OUTPUT ${GENERATE_DOCKERFILE_BUILD_SCRIPT} CONTENT "\
+
+build_dir = '${CMAKE_CURRENT_BINARY_DIR}'
+targets_list = '${DECLARED_CREATE_TARGETS}'
+docker_file = '${DOCKERFILE_BUILD_PATH}'
+docker_preamble = '''
+FROM ${DOCKERFILE_CONFIGURE_IMAGE}
+'''
+
+targets = targets_list.split(';')
+
+with open(docker_file, 'w') as f:
+
+    f.write(docker_preamble)
+
+    for target in targets:
+        f.write('\\n')
+        f.write(f'# invoke cmake to build target {target}\\n')
+        f.write(f'RUN cmake --build {build_dir} -t {target}\\n')
+")
+
+add_custom_target(generate_dockerfile_build
+    ALL
+    COMMAND ${PYTHON3} ${GENERATE_DOCKERFILE_BUILD_SCRIPT}
+    COMMENT
+    SOURCES ${GENERATE_DOCKERFILE_BUILD_SCRIPT}
+    )
