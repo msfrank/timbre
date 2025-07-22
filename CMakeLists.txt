@@ -12,6 +12,9 @@ set(CONAN_PACKAGE_CHANNEL ""
     CACHE STRING
     "the packaging channel, defaults to ''")
 
+set(CONAN_HOME ""
+    CACHE STRING
+    "the conan home location, defaults to ''")
 
 #######################################################################
 #
@@ -74,6 +77,22 @@ endif()
 #
 #######################################################################
 
+if (${CONAN_HOME})
+    set(CONAN "${CMAKE_COMMAND} -E env CONAN_HOME=\"${CONAN_HOME}\" ${Conan}")
+else()
+    set(CONAN ${Conan})
+endif ()
+
+
+#######################################################################
+#
+# define aggregate build targets
+#
+#######################################################################
+
+add_custom_target(export-all-packages ALL)
+add_custom_target(create-all-packages)
+
 
 #######################################################################
 #
@@ -81,24 +100,44 @@ endif()
 #
 #######################################################################
 
+set(DECLARED_EXPORT_TARGETS "" CACHE INTERNAL "declared export targets" FORCE)
+
 function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
+
+    set(EXPORT_TARGET_NAME "export_${PACKAGE_NAME}_${PACKAGE_VERSION}")
     if(${CONAN_PACKAGE_CHANNEL})
         add_custom_target (
-            export_${PACKAGE_NAME}_${PACKAGE_VERSION}
-            ALL
-            COMMAND ${Conan} export ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py --channel ${CONAN_PACKAGE_CHANNEL}
+            ${EXPORT_TARGET_NAME}
+            COMMAND ${CONAN} export ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py --channel ${CONAN_PACKAGE_CHANNEL}
             COMMENT "exporting package ${PACKAGE_NAME}-${PACKAGE_VERSION} into channel '${CONAN_PACKAGE_CHANNEL}'"
             SOURCES ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
         )
     else()
         add_custom_target (
-            export_${PACKAGE_NAME}_${PACKAGE_VERSION}
-            ALL
-            COMMAND ${Conan} export ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
+            ${EXPORT_TARGET_NAME}
+            COMMAND ${CONAN} export ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
             COMMENT "exporting package ${PACKAGE_NAME}-${PACKAGE_VERSION}"
             SOURCES ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
         )
     endif()
+    add_dependencies(export-all-packages ${EXPORT_TARGET_NAME})
+
+    set(export_targets_list ${DECLARED_EXPORT_TARGETS})
+    list(APPEND export_targets_list ${EXPORT_TARGET_NAME})
+    set(DECLARED_EXPORT_TARGETS ${export_targets_list} CACHE INTERNAL "declared export targets" FORCE)
+
+    #
+    set(CREATE_TARGET_NAME "create_${PACKAGE_NAME}_${PACKAGE_VERSION}")
+    add_custom_target (
+        ${CREATE_TARGET_NAME}
+        COMMAND ${CONAN} create ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py --build=missing
+        COMMENT "creating package ${PACKAGE_NAME}-${PACKAGE_VERSION}"
+        SOURCES ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
+    )
+    add_dependencies(create-all-packages ${CREATE_TARGET_NAME})
+
+    message(STATUS "declared export target ${PACKAGE_NAME}-${PACKAGE_VERSION}")
+
 endfunction()
 
 
