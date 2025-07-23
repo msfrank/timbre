@@ -4,13 +4,13 @@ from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
 from conan.tools.files import copy, get, unzip
 
-ROCKSDB_URL = "https://github.com/facebook/rocksdb/archive/refs/tags/v8.5.3.tar.gz"
-ROCKSDB_DOWNLOAD_NAME = "rocksdb-8.5.3.tar.gz"
-ROCKSDB_SOURCE_DIR = "rocksdb-8.5.3"
+ROCKSDB_URL = "https://github.com/facebook/rocksdb/archive/refs/tags/v10.4.2.tar.gz"
+ROCKSDB_DOWNLOAD_NAME = "rocksdb-10.4.2.tar.gz"
+ROCKSDB_SOURCE_DIR = "rocksdb-10.4.2"
 
 class Rocksdb(ConanFile):
     name = "rocksdb"
-    version = "8.5.3"
+    version = "10.4.2"
     user = "timbre"
     url = "https://rocksdb.org"
     description = """
