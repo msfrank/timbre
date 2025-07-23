@@ -174,11 +174,13 @@ set(GENERATE_DOCKERFILE_BUILD_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/generate_docke
 
 file(CONFIGURE OUTPUT ${GENERATE_DOCKERFILE_BUILD_SCRIPT} CONTENT "\
 
-build_dir = '${CMAKE_CURRENT_BINARY_DIR}'
+build_dir = 'build'
 targets_list = '${DECLARED_CREATE_TARGETS}'
 docker_file = '${DOCKERFILE_BUILD_PATH}'
 docker_preamble = '''
 FROM ${DOCKERFILE_CONFIGURE_IMAGE}
+USER jrandomhacker
+WORKDIR /home/jrandomhacker/src/timbre
 '''
 
 targets = targets_list.split(';')

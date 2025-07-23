@@ -4,7 +4,7 @@ FROM fedora:latest
 RUN dnf install -y g++ git cmake conan patchelf readelf
 
 # install platform dependencies
-RUN dnf install -y libxml2-devel zlib-devel bzip2-devel java-21-openjdk-devel libuuid-devel
+RUN dnf install -y libxml2-devel zlib-devel bzip2-devel python3-devel java-21-openjdk-devel libuuid-devel
 
 # install build dependencies
 RUN dnf install -y perl-File-Copy perl-File-Compare perl-IPC-Cmd perl-FindBin

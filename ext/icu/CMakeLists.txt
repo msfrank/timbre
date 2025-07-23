@@ -1,2 +1,2 @@
 
-declare_package_export("icu" "74.1")
+declare_package_export("icu" "77.1")
