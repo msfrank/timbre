@@ -10,11 +10,16 @@ project(timbre)
 
 set(CONAN_PACKAGE_CHANNEL ""
     CACHE STRING
-    "the packaging channel, defaults to ''")
+    "The packaging channel. Defaults to ''")
 
 set(CONAN_HOME ""
     CACHE STRING
-    "the conan home location, defaults to ''")
+    "The conan home location. Defaults to ''")
+
+set(DOCKER_REQUIRES_SUDO "FALSE"
+    CACHE BOOL
+    "TRUE if the docker command requires sudo privileges. Defaults to 'FALSE'")
+
 
 #######################################################################
 #
@@ -45,6 +50,9 @@ find_package (Python3 COMPONENTS Interpreter)
 
 # find conan package manager
 find_program(Conan conan REQUIRED)
+
+# find docker CLI
+find_program(Docker docker)
 
 # check the conan version
 execute_process(COMMAND ${Conan} --version
@@ -80,13 +88,19 @@ endif()
 #
 #######################################################################
 
-if (${CONAN_HOME})
+set(PYTHON3 ${Python3_EXECUTABLE})
+
+if (CONAN_HOME)
     set(CONAN "${CMAKE_COMMAND} -E env CONAN_HOME=\"${CONAN_HOME}\" ${Conan}")
 else()
     set(CONAN ${Conan})
 endif ()
 
-set(PYTHON3 ${Python3_EXECUTABLE})
+if (DOCKER_REQUIRES_SUDO)
+    set(DOCKER "sudo;${Docker}")
+else ()
+    set(DOCKER ${Docker})
+endif ()
 
 
 #######################################################################
@@ -111,7 +125,7 @@ function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
 
     # declare the export_<package-name>_<package-version> target
     set(EXPORT_TARGET_NAME "export_${PACKAGE_NAME}_${PACKAGE_VERSION}")
-    if(${CONAN_PACKAGE_CHANNEL})
+    if(CONAN_PACKAGE_CHANNEL)
         add_custom_target (
             ${EXPORT_TARGET_NAME}
             COMMAND ${CONAN} export ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py --channel ${CONAN_PACKAGE_CHANNEL}
@@ -166,19 +180,19 @@ add_subdirectory(ext)
 #
 #######################################################################
 
-set(DOCKERFILE_CONFIGURE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docker/Dockerfile.timbre-configure")
-set(DOCKERFILE_CONFIGURE_IMAGE "timbre-configure:latest")
-set(DOCKERFILE_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/Dockerfile.timbre-build")
+set(DOCKERFILE_BASE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docker/Dockerfile.base")
+set(DOCKERFILE_BASE_IMAGE "timbre-base:latest")
+set(DOCKERFILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/Dockerfile")
 
-set(GENERATE_DOCKERFILE_BUILD_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/generate_dockerfile_build.py")
+set(GENERATE_DOCKERFILE_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/generate_dockerfile.py")
 
-file(CONFIGURE OUTPUT ${GENERATE_DOCKERFILE_BUILD_SCRIPT} CONTENT "\
+file(CONFIGURE OUTPUT ${GENERATE_DOCKERFILE_SCRIPT} CONTENT "\
 
 build_dir = 'build'
 targets_list = '${DECLARED_CREATE_TARGETS}'
-docker_file = '${DOCKERFILE_BUILD_PATH}'
+docker_file = '${DOCKERFILE_PATH}'
 docker_preamble = '''
-FROM ${DOCKERFILE_CONFIGURE_IMAGE}
+FROM ${DOCKERFILE_BASE_IMAGE}
 USER jrandomhacker
 WORKDIR /home/jrandomhacker/src/timbre
 '''
@@ -195,9 +209,45 @@ with open(docker_file, 'w') as f:
         f.write(f'RUN cmake --build {build_dir} -t {target}\\n')
 ")
 
-add_custom_target(generate_dockerfile_build
+add_custom_target(generate_dockerfile
     ALL
-    COMMAND ${PYTHON3} ${GENERATE_DOCKERFILE_BUILD_SCRIPT}
-    COMMENT
-    SOURCES ${GENERATE_DOCKERFILE_BUILD_SCRIPT}
+    COMMAND ${PYTHON3} ${GENERATE_DOCKERFILE_SCRIPT}
+    COMMENT "generating Dockerfile"
+    SOURCES ${GENERATE_DOCKERFILE_SCRIPT}
     )
+
+
+#######################################################################
+#
+#
+#
+#######################################################################
+
+if (Docker)
+
+add_custom_target(build_docker_base_image
+    COMMAND ${DOCKER} build
+      --build-arg os=Linux
+      --build-arg arch=x86_64
+      --build-arg release_type=Debug
+      -t timbre-base
+      -f ${DOCKERFILE_BASE_PATH}
+      .
+    COMMENT "building base docker image"
+    DEPENDS ${DOCKERFILE_BASE_PATH}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+
+add_custom_target(build_docker_image
+    COMMAND ${DOCKER} build
+    -t timbre
+    -f ${DOCKERFILE_PATH}
+    .
+    COMMENT "building docker image"
+    DEPENDS generate_dockerfile build_docker_base_image
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+else ()
+    message(STATUS "docker not found, skipping generation of docker targets")
+endif()
