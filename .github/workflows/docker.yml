@@ -13,8 +13,9 @@ jobs:
     steps:
       - name: Install missing dependencies
         run: |
-          sudo apt-get install zlib1g-dev libxml2-dev libbz2-dev
-          sudo pip install conan
+          sudo apt-get install zlib1g-dev libxml2-dev libbz2-dev pipx
+          pipx ensurepath
+          pipx install conan
 
       - name: Checkout repository
         uses: actions/checkout@v4
