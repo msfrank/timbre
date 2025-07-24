@@ -9,7 +9,11 @@ jobs:
     name: Perform build and upload image to GHCR
     runs-on: ubuntu-latest
 
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -23,10 +27,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Configure timbre build system
+        run: cmake -B build
+
       - name: Build timbre image locally
-        run: |
-          cmake -B build
-          cmake --build -t build_docker_image
+        run: cmake --build build -t build_docker_image
 
       - name: Push image to GHCR
         run: docker buildx imagetools create --tag ghcr.io/msfrank/timbre:latest msfrank/timbre:latest
