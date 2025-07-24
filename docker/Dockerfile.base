@@ -44,6 +44,3 @@ RUN rm -rf build
 
 # generate the buildsystem
 RUN cmake -B build
-
-# run the export-all-packages build target
-RUN cmake --build build/ -t export-all-packages --parallel 1

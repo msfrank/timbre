@@ -189,12 +189,15 @@ set(GENERATE_DOCKERFILE_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/generate_dockerfile.
 file(CONFIGURE OUTPUT ${GENERATE_DOCKERFILE_SCRIPT} CONTENT "\
 
 build_dir = 'build'
-targets_list = '${DECLARED_CREATE_TARGETS}'
+#targets_list = '${DECLARED_CREATE_TARGETS}'
+targets_list = ''
 docker_file = '${DOCKERFILE_PATH}'
-docker_preamble = '''
+
+docker_preamble = f'''
 FROM ${DOCKERFILE_BASE_IMAGE}
 USER jrandomhacker
 WORKDIR /home/jrandomhacker/src/timbre
+RUN cmake --build {build_dir} -t export-all-packages --parallel 1
 '''
 
 targets = targets_list.split(';')
