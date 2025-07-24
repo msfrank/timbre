@@ -200,7 +200,7 @@ WORKDIR /home/jrandomhacker/src/timbre
 RUN cmake --build {build_dir} -t export-all-packages --parallel 1
 '''
 
-targets = targets_list.split(';')
+targets = [t for t in targets_list.split(';') if t != '']
 
 with open(docker_file, 'w') as f:
 
