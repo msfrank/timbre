@@ -40,4 +40,4 @@ jobs:
         run: cmake --build build -t build_docker_image
 
       - name: Push image to GHCR
-        run: docker buildx imagetools create --tag ghcr.io/msfrank/timbre:latest msfrank/timbre:latest
+        run: docker buildx imagetools create --tag ghcr.io/msfrank/timbre:latest docker.io/library/timbre:latest
