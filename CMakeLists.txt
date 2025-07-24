@@ -20,6 +20,10 @@ set(DOCKER_REQUIRES_SUDO "FALSE"
     CACHE BOOL
     "TRUE if the docker command requires sudo privileges. Defaults to 'FALSE'")
 
+set(DOCKER_REGISTRY ""
+    CACHE STRING
+    "The docker registry to export to. If empty then defaults to the local image store. Defaults to ''")
+
 
 #######################################################################
 #
@@ -181,10 +185,15 @@ add_subdirectory(ext)
 #######################################################################
 
 set(DOCKERFILE_BASE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docker/Dockerfile.base")
-set(DOCKERFILE_BASE_IMAGE "timbre-base:latest")
+set(DOCKERFILE_BASE_IMAGE "timbre/base:latest")
 set(DOCKERFILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/Dockerfile")
-
 set(GENERATE_DOCKERFILE_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/generate_dockerfile.py")
+
+if (DOCKER_REGISTRY)
+    set(BASE_IMAGE "${DOCKER_REGISTRY}:${DOCKERFILE_BASE_IMAGE}")
+else()
+    set(BASE_IMAGE ${DOCKERFILE_BASE_IMAGE})
+endif()
 
 file(CONFIGURE OUTPUT ${GENERATE_DOCKERFILE_SCRIPT} CONTENT "\
 
@@ -194,7 +203,7 @@ targets_list = ''
 docker_file = '${DOCKERFILE_PATH}'
 
 docker_preamble = f'''
-FROM ${DOCKERFILE_BASE_IMAGE}
+FROM ${BASE_IMAGE}
 USER jrandomhacker
 WORKDIR /home/jrandomhacker/src/timbre
 RUN cmake --build {build_dir} -t export-all-packages --parallel 1
@@ -228,25 +237,37 @@ add_custom_target(generate_dockerfile
 
 if (Docker)
 
+    if (DOCKER_REGISTRY)
+        set(DOCKER_OUTPUT "type=registry,push=true")
+        set(DOCKER_TAG_PREFIX "localhost:5000/")
+    else()
+        set(DOCKER_OUTPUT "type=docker")
+        set(DOCKER_TAG_PREFIX "")
+    endif ()
+
 add_custom_target(build_docker_base_image
     COMMAND ${DOCKER} build
+      --driver docker-container
       --build-arg os=Linux
       --build-arg arch=x86_64
       --build-arg release_type=Debug
-      -t timbre-base
+      -o ${DOCKER_OUTPUT}
+      -t "${DOCKER_TAG_PREFIX}timbre/base"
       -f ${DOCKERFILE_BASE_PATH}
       .
-    COMMENT "building base docker image"
+    COMMENT "building timbre/base docker image"
     DEPENDS ${DOCKERFILE_BASE_PATH}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
 
 add_custom_target(build_docker_image
     COMMAND ${DOCKER} build
-    -t timbre
-    -f ${DOCKERFILE_PATH}
-    .
-    COMMENT "building docker image"
+      --driver docker-container
+      -o ${DOCKER_OUTPUT}
+      -t "${DOCKER_TAG_PREFIX}timbre/timbre"
+      -f ${DOCKERFILE_PATH}
+      .
+    COMMENT "building timbre/timbre docker image"
     DEPENDS generate_dockerfile build_docker_base_image
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
