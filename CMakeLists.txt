@@ -239,7 +239,7 @@ if (Docker)
 
     if (DOCKER_REGISTRY)
         set(DOCKER_OUTPUT "type=registry,push=true")
-        set(DOCKER_TAG_PREFIX "localhost:5000/")
+        set(DOCKER_TAG_PREFIX "${DOCKER_REGISTRY}/")
     else()
         set(DOCKER_OUTPUT "type=docker")
         set(DOCKER_TAG_PREFIX "")
@@ -247,7 +247,6 @@ if (Docker)
 
 add_custom_target(build_docker_base_image
     COMMAND ${DOCKER} build
-      --driver docker-container
       --build-arg os=Linux
       --build-arg arch=x86_64
       --build-arg release_type=Debug
@@ -262,7 +261,6 @@ add_custom_target(build_docker_base_image
 
 add_custom_target(build_docker_image
     COMMAND ${DOCKER} build
-      --driver docker-container
       -o ${DOCKER_OUTPUT}
       -t "${DOCKER_TAG_PREFIX}timbre/timbre"
       -f ${DOCKERFILE_PATH}
