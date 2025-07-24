@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Install missing dependencies
-        run: apt-get install zlib1g-dev libxml2-dev libbz2-dev
+        run: sudo apt-get install zlib1g-dev libxml2-dev libbz2-dev
 
       - name: Checkout repository
         uses: actions/checkout@v4
