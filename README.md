@@ -1,7 +1,7 @@
 Timbre - Pinned Conan package recipes
 =====================================
 
-Copyright (c) 2024, Michael Frank
+Copyright (c) 2024-2025, Michael Frank
 
 Overview
 --------
