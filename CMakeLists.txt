@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.27)
 project(timbre)
 
 if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "build type not specified so defaulting to Debug")
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "build type not specified so defaulting to Debug" FORCE)
 endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
