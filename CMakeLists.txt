@@ -146,7 +146,7 @@ endif ()
 #
 #######################################################################
 
-set(CONAN_PROFILE_Linux_x64_64_Debug    "Linux.x86_64.Debug")
+set(CONAN_PROFILE_Linux_x86_64_Debug    "Linux.x86_64.Debug")
 set(CONAN_PROFILE_Linux_arm64_Debug     "Linux.armv8.Debug")
 set(CONAN_PROFILE_Linux_aarch64_Debug   "Linux.armv8.Debug")
 
