@@ -9,6 +9,13 @@ jobs:
     name: Perform build and upload image to GHCR
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/x86_64
+          - linux/arm64
+
     services:
       registry:
         image: registry:2

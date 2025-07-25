@@ -2,6 +2,17 @@ cmake_minimum_required(VERSION 3.27)
 
 project(timbre)
 
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "build type not specified so defaulting to Debug")
+endif()
+
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    set(IS_DEBUG_BUILD ON)
+else()
+    set(IS_DEBUG_BUILD OFF)
+endif()
+
+
 #######################################################################
 #
 # declare options
@@ -16,9 +27,21 @@ set(CONAN_HOME ""
     CACHE STRING
     "The conan home location. Defaults to ''")
 
+set(DOCKER_PROGRAM ""
+    CACHE FILEPATH
+    "Path to the docker command. If empty then the program path is auto-detected. Defaults to ''")
+
 set(DOCKER_REQUIRES_SUDO "FALSE"
     CACHE BOOL
     "TRUE if the docker command requires sudo privileges. Defaults to 'FALSE'")
+
+set(DOCKER_PLATFORM ""
+    CACHE STRING
+    "Target platform for docker image. If empty then the platform is auto-detected. Defaults to ''")
+
+set(DOCKER_CONAN_PROFILE ""
+    CACHE FILEPATH
+    "Conan profile used when building inside docker. If empty then the profile is auto-detected. Defaults to ''")
 
 set(DOCKER_REGISTRY ""
     CACHE STRING
@@ -55,9 +78,6 @@ find_package (Python3 COMPONENTS Interpreter)
 # find conan package manager
 find_program(Conan conan REQUIRED)
 
-# find docker CLI
-find_program(Docker docker)
-
 # check the conan version
 execute_process(COMMAND ${Conan} --version
     RESULT_VARIABLE CONAN_RESULT
@@ -69,7 +89,7 @@ if (${CONAN_RESULT} GREATER 0)
     message(FATAL_ERROR "Failed to invoke ${Conan}: {CONAN_ERROR}")
 endif()
 
-string(REGEX REPLACE "Conan version ([0-9]+\\.[0-9]+\\.[0-9]+)" "\\1"
+string(REGEX REPLACE "Conan version ([0-9]+\\.[0-9]+\\.[0-9]+)\n" "\\1"
     CONAN_FULL_VERSION
     "${CONAN_OUTPUT}")
 if (NOT CONAN_FULL_VERSION)
@@ -80,9 +100,22 @@ string(REGEX REPLACE "([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1"
     CONAN_MAJOR_VERSION
     "${CONAN_FULL_VERSION}")
 if (${CONAN_MAJOR_VERSION} EQUAL 2)
-    message(STATUS "Found conan version ${CONAN_FULL_VERSION}")
+    message(STATUS "Found Conan: ${Conan} (found version \"${CONAN_FULL_VERSION}\")")
 else()
     message(FATAL_ERROR "Version 2 of conan is required but detected: ${CONAN_FULL_VERSION}")
+endif()
+
+# find docker CLI
+if (DOCKER_PROGRAM)
+    set(Docker ${DOCKER_PROGRAM})
+    message(STATUS "Using Docker: ${Docker} (specified by DOCKER_PROGRAM)")
+else()
+    find_program(Docker docker)
+    if (Docker EQUAL "Docker-NOTFOUND")
+        message(STATUS "Docker not found, skipping generation of docker targets")
+    else()
+        message(STATUS "Found Docker: ${Docker}")
+    endif()
 endif()
 
 
@@ -105,6 +138,17 @@ if (DOCKER_REQUIRES_SUDO)
 else ()
     set(DOCKER ${Docker})
 endif ()
+
+
+#######################################################################
+#
+# Data tables
+#
+#######################################################################
+
+set(CONAN_PROFILE_Linux_x64_64_Debug    "Linux.x86_64.Debug")
+set(CONAN_PROFILE_Linux_arm64_Debug     "Linux.armv8.Debug")
+set(CONAN_PROFILE_Linux_aarch64_Debug   "Linux.armv8.Debug")
 
 
 #######################################################################
@@ -243,33 +287,54 @@ if (Docker)
     else()
         set(DOCKER_OUTPUT "type=docker")
         set(DOCKER_TAG_PREFIX "")
-    endif ()
+    endif()
 
-add_custom_target(build_docker_base_image
-    COMMAND ${DOCKER} build
-      --build-arg os=Linux
-      --build-arg arch=x86_64
-      --build-arg release_type=Debug
-      -o ${DOCKER_OUTPUT}
-      -t "${DOCKER_TAG_PREFIX}timbre/base"
-      -f ${DOCKERFILE_BASE_PATH}
+    # set the PLATFORM_ID
+    if (DOCKER_PLATFORM)
+        set(PLATFORM_ID ${DOCKER_PLATFORM})
+    else()
+        set(PLATFORM_ID "linux/${CMAKE_SYSTEM_PROCESSOR}")
+    endif()
+    if (NOT PLATFORM_ID)
+        message(FATAL_ERROR "failed to determine docker platform id")
+    endif()
+
+    # set the PROFILE_PATH
+    if (DOCKER_CONAN_PROFILE)
+        set(PROFILE_NAME ${DOCKER_CONAN_PROFILE})
+    else()
+        set(PROFILE_NAME ${CONAN_PROFILE_Linux_${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_BUILD_TYPE}})
+    endif()
+    if (NOT PROFILE_NAME)
+        message(STATUS "processor: ${CMAKE_SYSTEM_PROCESSOR} build type: ${CMAKE_BUILD_TYPE}")
+        message(FATAL_ERROR "failed to determine conan profile name")
+    endif()
+
+    # build the timbre/base image
+    add_custom_target(build_docker_base_image
+        COMMAND ${DOCKER} build
+          --platform ${PLATFORM_ID}
+          --build-arg profile_name=${PROFILE_NAME}
+          -o ${DOCKER_OUTPUT}
+          -t "${DOCKER_TAG_PREFIX}timbre/base"
+          -f ${DOCKERFILE_BASE_PATH}
       .
-    COMMENT "building timbre/base docker image"
-    DEPENDS ${DOCKERFILE_BASE_PATH}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "building timbre/base docker image"
+        DEPENDS ${DOCKERFILE_BASE_PATH}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        )
+
+    # build the timbre/timbre image
+    add_custom_target(build_docker_image
+        COMMAND ${DOCKER} build
+          --platform ${PLATFORM_ID}
+          -o ${DOCKER_OUTPUT}
+          -t "${DOCKER_TAG_PREFIX}timbre/timbre"
+          -f ${DOCKERFILE_PATH}
+      .
+        COMMENT "building timbre/timbre docker image"
+        DEPENDS generate_dockerfile build_docker_base_image
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
 
-add_custom_target(build_docker_image
-    COMMAND ${DOCKER} build
-      -o ${DOCKER_OUTPUT}
-      -t "${DOCKER_TAG_PREFIX}timbre/timbre"
-      -f ${DOCKERFILE_PATH}
-      .
-    COMMENT "building timbre/timbre docker image"
-    DEPENDS generate_dockerfile build_docker_base_image
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
-
-else ()
-    message(STATUS "docker not found, skipping generation of docker targets")
 endif()
