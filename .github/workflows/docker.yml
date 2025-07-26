@@ -48,7 +48,7 @@ jobs:
           driver-opts: network=host
 
       - name: Configure timbre build system
-        run: cmake -B build -DDOCKER_REGISTRY=localhost:5000
+        run: cmake -B build -DDOCKER_REGISTRY=localhost:5000 -DDOCKER_PLATFORM_ID=${{matrix.platform}}
 
       - name: Build timbre image locally
         run: cmake --build build -t build_docker_image
