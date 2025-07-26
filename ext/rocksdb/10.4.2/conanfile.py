@@ -35,7 +35,7 @@ A Persistent Key-Value Store for Flash and RAM Storage.
         tc.cache_variables['WITH_TOOLS'] = 'OFF'
         tc.cache_variables['WITH_BENCHMARK_TOOLS'] = 'OFF'
         tc.cache_variables['CMAKE_INSTALL_LIBDIR'] = 'lib'
-        tc.cache_variables['CMAKE_CXX_FLAGS'] = '-Wno-deprecated-declarations -Wno-nontrivial-memcall'
+        tc.cache_variables['CMAKE_CXX_FLAGS'] = '-Wno-deprecated-declarations -Wno-nontrivial-memaccess'
         tc.generate()
         deps = CMakeDeps(self)
         deps.generate()

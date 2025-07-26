@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.27)
 
-project(timbre)
+project(timbre
+    VERSION 0.1.0
+    HOMEPAGE_URL "https://github.com/msfrank/timbre"
+    DESCRIPTION "Pinned Conan package recipes"
+    )
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "build type not specified so defaulting to Debug" FORCE)
@@ -317,8 +321,10 @@ if (Docker)
           --build-arg profile_name=${PROFILE_NAME}
           -o ${DOCKER_OUTPUT}
           -t "${DOCKER_TAG_PREFIX}timbre/base"
+          -t "${DOCKER_TAG_PREFIX}timbre/base:${CMAKE_PROJECT_VERSION}"
           -f ${DOCKERFILE_BASE_PATH}
-      .
+          --label "org.opencontainers.image.version=${CMAKE_PROJECT_VERSION}"
+          .
         COMMENT "building timbre/base docker image"
         DEPENDS ${DOCKERFILE_BASE_PATH}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -330,11 +336,16 @@ if (Docker)
           --platform ${PLATFORM_ID}
           -o ${DOCKER_OUTPUT}
           -t "${DOCKER_TAG_PREFIX}timbre/timbre"
+          -t "${DOCKER_TAG_PREFIX}timbre/timbre:${CMAKE_PROJECT_VERSION}"
           -f ${DOCKERFILE_PATH}
-      .
+          --label "org.opencontainers.image.version=${CMAKE_PROJECT_VERSION}"
+          --label "org.opencontainers.image.source=${CMAKE_PROJECT_HOMEPAGE_URL}"
+          --label "org.opencontainers.image.description=${CMAKE_PROJECT_DESCRIPTION}"
+          --label "org.opencontainers.image.licenses=BSD-3-Clause"
+          .
         COMMENT "building timbre/timbre docker image"
         DEPENDS generate_dockerfile build_docker_base_image
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    )
+        )
 
 endif()
