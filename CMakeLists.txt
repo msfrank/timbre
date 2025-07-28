@@ -1,19 +1,77 @@
 cmake_minimum_required(VERSION 3.27)
 
+# read project metadata
+file(READ ${CMAKE_SOURCE_DIR}/meta/version TIMBRE_PROJECT_VERSION)
+string(STRIP ${TIMBRE_PROJECT_VERSION} TIMBRE_PROJECT_VERSION)
+file(READ ${CMAKE_SOURCE_DIR}/meta/url TIMBRE_PROJECT_URL)
+string(STRIP ${TIMBRE_PROJECT_URL} TIMBRE_PROJECT_URL)
+file(READ ${CMAKE_SOURCE_DIR}/meta/description TIMBRE_PROJECT_DESCRIPTION)
+string(STRIP ${TIMBRE_PROJECT_DESCRIPTION} TIMBRE_PROJECT_DESCRIPTION)
+
+# declare the project
 project(timbre
-    VERSION 0.1.0
-    HOMEPAGE_URL "https://github.com/msfrank/timbre"
-    DESCRIPTION "Pinned Conan package recipes"
+    VERSION ${TIMBRE_PROJECT_VERSION}
+    HOMEPAGE_URL ${TIMBRE_PROJECT_URL}
+    DESCRIPTION ${TIMBRE_PROJECT_DESCRIPTION}
     )
 
+# if build type was not explicitly defined then default to Debug
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "build type not specified so defaulting to Debug" FORCE)
 endif()
 
+# define IS_DEBUG_BUILD boolean to make it easier to check whether we are in debug mode
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     set(IS_DEBUG_BUILD ON)
 else()
     set(IS_DEBUG_BUILD OFF)
+endif()
+
+
+#######################################################################
+#
+# declare packages data
+#
+#######################################################################
+
+set(DECLARED_PACKAGES "" CACHE INTERNAL "declared packages")
+
+function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
+
+    # define a NAME_* and VERSION_* cache variable for the declared package
+    set(PACKAGE_NAME_AND_VERSION "${PACKAGE_NAME}_${PACKAGE_VERSION}")
+    set(NAME_${PACKAGE_NAME_AND_VERSION} ${PACKAGE_NAME} CACHE INTERNAL "declared name for ${PACKAGE_NAME_AND_VERSION}")
+    set(VERSION_${PACKAGE_NAME_AND_VERSION} ${PACKAGE_VERSION} CACHE INTERNAL "declared version for ${PACKAGE_NAME_AND_VERSION}")
+
+    # append the package id ( in '<name>_<version>' format) to DECLARED_PACKAGES
+    set(declared_packages_list ${DECLARED_PACKAGES})
+    list(APPEND declared_packages_list ${PACKAGE_NAME_AND_VERSION})
+    set(DECLARED_PACKAGES ${declared_packages_list} CACHE INTERNAL "declared packages")
+
+    message(STATUS "declared package ${PACKAGE_NAME}-${PACKAGE_VERSION}")
+
+endfunction()
+
+add_subdirectory(ext)
+
+
+#######################################################################
+#
+#
+#
+#######################################################################
+
+option(DISABLE_LOCAL_BUILD "Disable local build" FALSE)
+option(ENABLE_DOCKER_BUILD "Enable docker build" FALSE)
+
+# if docker build is enabled then add targets from docker directory
+if (ENABLE_DOCKER_BUILD)
+    add_subdirectory(docker)
+endif()
+
+# if local build is disabled then don't process any further targets
+if (DISABLE_LOCAL_BUILD)
+    return()
 endif()
 
 
@@ -30,33 +88,6 @@ set(CONAN_PACKAGE_CHANNEL ""
 set(CONAN_HOME ""
     CACHE STRING
     "The conan home location. Defaults to ''")
-
-set(DOCKER_PROGRAM ""
-    CACHE FILEPATH
-    "Path to the docker command. If empty then the program path is auto-detected. Defaults to ''")
-
-set(DOCKER_REQUIRES_SUDO "FALSE"
-    CACHE BOOL
-    "TRUE if the docker command requires sudo privileges. Defaults to 'FALSE'")
-
-set(DOCKER_PLATFORM ""
-    CACHE STRING
-    "Target platform for docker image. If empty then the platform is auto-detected. Defaults to ''")
-
-set(DOCKER_CONAN_PROFILE ""
-    CACHE FILEPATH
-    "Conan profile used when building inside docker. If empty then the profile is auto-detected. Defaults to ''")
-
-set(DOCKER_REGISTRY ""
-    CACHE STRING
-    "The docker registry to export to. If empty then defaults to the local image store. Defaults to ''")
-
-
-#######################################################################
-#
-# configure toolchain
-#
-#######################################################################
 
 
 #######################################################################
@@ -75,9 +106,6 @@ find_package(LibXml2 REQUIRED)
 
 # find java installation
 find_package(Java REQUIRED)
-
-# find python installation
-find_package (Python3 COMPONENTS Interpreter)
 
 # find conan package manager
 find_program(Conan conan REQUIRED)
@@ -109,19 +137,6 @@ else()
     message(FATAL_ERROR "Version 2 of conan is required but detected: ${CONAN_FULL_VERSION}")
 endif()
 
-# find docker CLI
-if (DOCKER_PROGRAM)
-    set(Docker ${DOCKER_PROGRAM})
-    message(STATUS "Using Docker: ${Docker} (specified by DOCKER_PROGRAM)")
-else()
-    find_program(Docker docker)
-    if (Docker EQUAL "Docker-NOTFOUND")
-        message(STATUS "Docker not found, skipping generation of docker targets")
-    else()
-        message(STATUS "Found Docker: ${Docker}")
-    endif()
-endif()
-
 
 #######################################################################
 #
@@ -129,51 +144,26 @@ endif()
 #
 #######################################################################
 
-set(PYTHON3 ${Python3_EXECUTABLE})
-
 if (CONAN_HOME)
     set(CONAN "${CMAKE_COMMAND} -E env CONAN_HOME=\"${CONAN_HOME}\" ${Conan}")
 else()
     set(CONAN ${Conan})
 endif ()
 
-if (DOCKER_REQUIRES_SUDO)
-    set(DOCKER "sudo;${Docker}")
-else ()
-    set(DOCKER ${Docker})
-endif ()
-
 
 #######################################################################
 #
-# Data tables
-#
-#######################################################################
-
-set(CONAN_PROFILE_Linux_x86_64_Debug    "Linux.x86_64.Debug")
-set(CONAN_PROFILE_Linux_arm64_Debug     "Linux.armv8.Debug")
-set(CONAN_PROFILE_Linux_aarch64_Debug   "Linux.armv8.Debug")
-
-
-#######################################################################
-#
-# define aggregate build targets
+# define export and create targets
 #
 #######################################################################
 
 add_custom_target(export-all-packages ALL)
 add_custom_target(create-all-packages)
 
+foreach (PACKAGE_NAME_AND_VERSION ${DECLARED_PACKAGES})
 
-#######################################################################
-#
-# define build constants
-#
-#######################################################################
-
-set(DECLARED_CREATE_TARGETS "" CACHE INTERNAL "declared create targets" FORCE)
-
-function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
+    set(PACKAGE_NAME ${NAME_${PACKAGE_NAME_AND_VERSION}})
+    set(PACKAGE_VERSION ${VERSION_${PACKAGE_NAME_AND_VERSION}})
 
     # declare the export_<package-name>_<package-version> target
     set(EXPORT_TARGET_NAME "export_${PACKAGE_NAME}_${PACKAGE_VERSION}")
@@ -208,144 +198,4 @@ function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
     # add create target as a dependency of the export-all-packages target
     add_dependencies(create-all-packages ${CREATE_TARGET_NAME})
 
-    set(create_targets_list ${DECLARED_CREATE_TARGETS})
-    list(APPEND create_targets_list ${CREATE_TARGET_NAME})
-    set(DECLARED_CREATE_TARGETS ${create_targets_list} CACHE INTERNAL "declared create targets" FORCE)
-
-    message(STATUS "declared package ${PACKAGE_NAME}-${PACKAGE_VERSION}")
-
-endfunction()
-
-
-#######################################################################
-#
-# add targets from subdirectories
-#
-#######################################################################
-
-add_subdirectory(ext)
-
-
-#######################################################################
-#
-# generate Dockerfile for building package targets
-#
-#######################################################################
-
-set(DOCKERFILE_BASE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docker/Dockerfile.base")
-set(DOCKERFILE_BASE_IMAGE "timbre/base:latest")
-set(DOCKERFILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/Dockerfile")
-set(GENERATE_DOCKERFILE_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/generate_dockerfile.py")
-
-if (DOCKER_REGISTRY)
-    set(BASE_IMAGE "${DOCKER_REGISTRY}/${DOCKERFILE_BASE_IMAGE}")
-else()
-    set(BASE_IMAGE ${DOCKERFILE_BASE_IMAGE})
-endif()
-
-file(CONFIGURE OUTPUT ${GENERATE_DOCKERFILE_SCRIPT} CONTENT "\
-
-build_dir = 'build'
-targets_list = '${DECLARED_CREATE_TARGETS}'
-#targets_list = ''
-docker_file = '${DOCKERFILE_PATH}'
-
-docker_preamble = f'''
-FROM ${BASE_IMAGE}
-USER jrandomhacker
-WORKDIR /home/jrandomhacker/src/timbre
-RUN cmake --build {build_dir} -t export-all-packages --parallel 1
-'''
-
-targets = [t for t in targets_list.split(';') if t != '']
-
-with open(docker_file, 'w') as f:
-
-    f.write(docker_preamble)
-
-    for target in targets:
-        f.write('\\n')
-        f.write(f'# invoke cmake to build target {target}\\n')
-        f.write(f'RUN cmake --build {build_dir} -t {target}\\n')
-")
-
-add_custom_target(generate_dockerfile
-    ALL
-    COMMAND ${PYTHON3} ${GENERATE_DOCKERFILE_SCRIPT}
-    COMMENT "generating Dockerfile"
-    SOURCES ${GENERATE_DOCKERFILE_SCRIPT}
-    )
-
-
-#######################################################################
-#
-#
-#
-#######################################################################
-
-if (Docker)
-
-    if (DOCKER_REGISTRY)
-        set(DOCKER_OUTPUT "type=registry,push=true")
-        set(DOCKER_TAG_PREFIX "${DOCKER_REGISTRY}/")
-    else()
-        set(DOCKER_OUTPUT "type=docker")
-        set(DOCKER_TAG_PREFIX "")
-    endif()
-
-    # set the PLATFORM_ID
-    if (DOCKER_PLATFORM)
-        set(PLATFORM_ID ${DOCKER_PLATFORM})
-    else()
-        set(PLATFORM_ID "linux/${CMAKE_SYSTEM_PROCESSOR}")
-    endif()
-    if (NOT PLATFORM_ID)
-        message(FATAL_ERROR "failed to determine docker platform id")
-    endif()
-
-    # set the PROFILE_PATH
-    if (DOCKER_CONAN_PROFILE)
-        set(PROFILE_NAME ${DOCKER_CONAN_PROFILE})
-    else()
-        set(PROFILE_NAME ${CONAN_PROFILE_Linux_${CMAKE_SYSTEM_PROCESSOR}_${CMAKE_BUILD_TYPE}})
-    endif()
-    if (NOT PROFILE_NAME)
-        message(STATUS "processor: ${CMAKE_SYSTEM_PROCESSOR} build type: ${CMAKE_BUILD_TYPE}")
-        message(FATAL_ERROR "failed to determine conan profile name")
-    endif()
-
-    # build the timbre/base image
-    add_custom_target(build_docker_base_image
-        COMMAND ${DOCKER} build
-          --platform ${PLATFORM_ID}
-          --build-arg profile_name=${PROFILE_NAME}
-          -o ${DOCKER_OUTPUT}
-          -t "${DOCKER_TAG_PREFIX}timbre/base"
-          -t "${DOCKER_TAG_PREFIX}timbre/base:${CMAKE_PROJECT_VERSION}"
-          -f ${DOCKERFILE_BASE_PATH}
-          --label "org.opencontainers.image.version=${CMAKE_PROJECT_VERSION}"
-          .
-        COMMENT "building timbre/base docker image"
-        DEPENDS ${DOCKERFILE_BASE_PATH}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        )
-
-    # build the timbre/timbre image
-    add_custom_target(build_docker_image
-        COMMAND ${DOCKER} build
-          --platform ${PLATFORM_ID}
-          -o ${DOCKER_OUTPUT}
-          -t "${DOCKER_TAG_PREFIX}timbre/timbre"
-          -t "${DOCKER_TAG_PREFIX}timbre/timbre:${CMAKE_PROJECT_VERSION}"
-          -f ${DOCKERFILE_PATH}
-          --label "org.opencontainers.image.version=${CMAKE_PROJECT_VERSION}"
-          --label "org.opencontainers.image.source=${CMAKE_PROJECT_HOMEPAGE_URL}"
-          --label "org.opencontainers.image.description=${CMAKE_PROJECT_DESCRIPTION}"
-          --label "org.opencontainers.image.licenses=BSD-3-Clause"
-          .
-        COMMENT "building timbre/timbre docker image"
-        DEPENDS generate_dockerfile build_docker_base_image
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        )
-
-endif()
+endforeach()

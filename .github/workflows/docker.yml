@@ -23,12 +23,6 @@ jobs:
           - 5000:5000
 
     steps:
-      - name: Install missing dependencies
-        run: |
-          sudo apt-get install zlib1g-dev libxml2-dev libbz2-dev pipx
-          pipx ensurepath
-          pipx install conan
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -48,10 +42,18 @@ jobs:
           driver-opts: network=host
 
       - name: Configure timbre build system
-        run: cmake -B build -DDOCKER_REGISTRY=localhost:5000 -DDOCKER_PLATFORM_ID=${{matrix.platform}}
+        run: |
+          cmake -B build \
+            -DENABLE_DOCKER_BUILD=TRUE \
+            -DDISABLE_LOCAL_BUILD=TRUE \
+            -DDOCKER_REGISTRY=localhost:5000 \
+            -DDOCKER_PLATFORM_ID=${{matrix.platform}}
 
       - name: Build timbre image locally
         run: cmake --build build -t build_docker_image
 
       - name: Push image to GHCR
-        run: docker buildx imagetools create --tag ghcr.io/msfrank/timbre:latest localhost:5000/timbre/timbre:latest
+        run: |
+          docker buildx imagetools create \
+            --tag ghcr.io/msfrank/timbre:latest \
+            localhost:5000/timbre/timbre:latest
