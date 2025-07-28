@@ -46,7 +46,7 @@ jobs:
           cmake -B build \
             -DENABLE_DOCKER_BUILD=TRUE \
             -DDISABLE_LOCAL_BUILD=TRUE \
-            -DDOCKER_REGISTRY=localhost:5000 \
+            -DDOCKER_REGISTRY=localhost:5000/ \
             -DDOCKER_PLATFORM_ID=${{matrix.platform}}
 
       - name: Build timbre image locally

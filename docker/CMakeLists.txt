@@ -96,11 +96,11 @@ file(CONFIGURE OUTPUT ${GENERATE_DOCKERFILE_SCRIPT} CONTENT "\
 
 build_dir = 'build'
 targets_list = '${DECLARED_PACKAGES}'
-#targets_list = ''
 docker_file = '${DOCKERFILE_PATH}'
 
 docker_preamble = f'''
 FROM ${BASE_IMAGE}
+ARG is_debug_build=0
 USER jrandomhacker
 WORKDIR /home/jrandomhacker/src/timbre
 RUN cmake --build {build_dir} -t export-all-packages --parallel 1
@@ -116,6 +116,11 @@ with open(docker_file, 'w') as f:
         f.write('\\n')
         f.write(f'# invoke cmake to build target {target}\\n')
         f.write(f'RUN cmake --build {build_dir} -t {target}\\n')
+
+    f.write('\\n')
+    f.write('RUN conan cache clean --download --source --temp --backup-sources \\'*\\'\\n')
+    f.write('ENV IS_DEBUG_BUILD=$is_debug_build\\n')
+    f.write('RUN if test $IS_DEBUG_BUILD == 0; then conan cache clean --build \\'*\\'; fi\\n')
 ")
 
 add_custom_target(generate_dockerfile
@@ -134,10 +139,8 @@ add_custom_target(generate_dockerfile
 
 if (DOCKER_REGISTRY)
     set(DOCKER_OUTPUT "type=registry,push=true")
-    set(DOCKER_TAG_PREFIX "${DOCKER_REGISTRY}/")
 else()
     set(DOCKER_OUTPUT "type=docker")
-    set(DOCKER_TAG_PREFIX "")
 endif()
 
 # set the PLATFORM_ID
@@ -167,8 +170,8 @@ add_custom_target(build_docker_base_image
     --platform ${PLATFORM_ID}
     --build-arg profile_name=${PROFILE_NAME}
     -o ${DOCKER_OUTPUT}
-    -t "${DOCKER_TAG_PREFIX}timbre/base"
-    -t "${DOCKER_TAG_PREFIX}timbre/base:${CMAKE_PROJECT_VERSION}"
+    -t "${DOCKER_REGISTRY}timbre/base"
+    -t "${DOCKER_REGISTRY}timbre/base:${CMAKE_PROJECT_VERSION}"
     -f ${DOCKERFILE_BASE_PATH}
     --label "org.opencontainers.image.version=${CMAKE_PROJECT_VERSION}"
     .
@@ -177,20 +180,21 @@ add_custom_target(build_docker_base_image
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
 
-# build the timbre/timbre image
+# build the timbre image
 add_custom_target(build_docker_image
     COMMAND ${DOCKER} build
     --platform ${PLATFORM_ID}
+    --build-arg is_debug_build=$<BOOL:${IS_DEBUG_BUILD}>
     -o ${DOCKER_OUTPUT}
-    -t "${DOCKER_TAG_PREFIX}timbre/timbre"
-    -t "${DOCKER_TAG_PREFIX}timbre/timbre:${CMAKE_PROJECT_VERSION}"
+    -t "${DOCKER_REGISTRY}timbre"
+    -t "${DOCKER_REGISTRY}timbre:${CMAKE_PROJECT_VERSION}"
     -f ${DOCKERFILE_PATH}
     --label "org.opencontainers.image.version=${CMAKE_PROJECT_VERSION}"
     --label "org.opencontainers.image.source=${CMAKE_PROJECT_HOMEPAGE_URL}"
     --label "org.opencontainers.image.description=${CMAKE_PROJECT_DESCRIPTION}"
-    --label "org.opencontainers.image.licenses=BSD-3-Clause"
+    --label "org.opencontainers.image.licenses=${TIMBRE_PROJECT_LICENSE}"
     .
-    COMMENT "building timbre/timbre docker image"
+    COMMENT "building timbre docker image"
     DEPENDS generate_dockerfile build_docker_base_image
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )

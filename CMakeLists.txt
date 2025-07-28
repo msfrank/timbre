@@ -7,6 +7,8 @@ file(READ ${CMAKE_SOURCE_DIR}/meta/url TIMBRE_PROJECT_URL)
 string(STRIP ${TIMBRE_PROJECT_URL} TIMBRE_PROJECT_URL)
 file(READ ${CMAKE_SOURCE_DIR}/meta/description TIMBRE_PROJECT_DESCRIPTION)
 string(STRIP ${TIMBRE_PROJECT_DESCRIPTION} TIMBRE_PROJECT_DESCRIPTION)
+file(READ ${CMAKE_SOURCE_DIR}/meta/license TIMBRE_PROJECT_LICENSE)
+string(STRIP ${TIMBRE_PROJECT_LICENSE} TIMBRE_PROJECT_LICENSE)
 
 # declare the project
 project(timbre
@@ -57,7 +59,7 @@ add_subdirectory(ext)
 
 #######################################################################
 #
-#
+# enable/disable build targets
 #
 #######################################################################
 
