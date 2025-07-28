@@ -56,4 +56,4 @@ jobs:
         run: |
           docker buildx imagetools create \
             --tag ghcr.io/msfrank/timbre:latest \
-            localhost:5000/timbre/timbre:latest
+            localhost:5000/timbre:latest
