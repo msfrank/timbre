@@ -5,15 +5,60 @@ on:
       - master
 
 jobs:
+
+  define-matrix:
+    name: Define output variables which are shared across jobs
+    runs-on: ubuntu-latest
+
+    outputs:
+      build_types: ${{ steps.build_types.outputs.build_types }}
+      build_platforms: ${{ steps.build_platforms.outputs.build_platforms }}
+      platform_runner: ${{ steps.platform_runner.outputs.platform_runner }}
+      platform_os: ${{ steps.platform_os.outputs.platform_os }}
+
+    steps:
+      - name: Define build types
+        id: build_types
+        run: |
+          echo 'build_types=["Debug"]' >> "$GITHUB_OUTPUT"
+
+      - name: Define build platforms
+        id: build_platforms
+        run: |
+          echo 'build_platforms=["linux/arm64", "linux/x86_64"]' >> "$GITHUB_OUTPUT"
+
+      - name: Define platform runner map
+        id: platform_runner
+        run: |
+          echo 'platform_runner={"linux/arm64": "ubuntu-24.04-arm", "linux/x86_64": "ubuntu-24.04"}' >> "$GITHUB_OUTPUT"
+
+      - name: Define platform OS map
+        id: platform_os
+        run: |
+          {
+            cat << EOF
+            platform_os={
+              "linux/arm64": "Linux",
+              "linux/x86_64": "Linux"
+            }
+            EOF
+          } >> "$GITHUB_OUTPUT"
+
   build-and-upload:
     name: Perform build and upload image to GHCR
-    runs-on: ubuntu-24.04-arm
+    needs:
+      - define-matrix
 
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        platform:
-          - linux/arm64
+        build_type: ${{ fromJSON(needs.define-matrix.outputs.build_types) }}
+        build_platform: ${{ fromJSON(needs.define-matrix.outputs.build_platforms) }}
+
+    env:
+      PLATFORM: ${{ matrix.build_platform }}
+
+    runs-on: ${{ needs.define-matrix.outputs.platform_runner[env.PLATFORM] }}
 
     services:
       registry:
@@ -43,10 +88,11 @@ jobs:
       - name: Configure timbre build system
         run: |
           cmake -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
             -DENABLE_DOCKER_BUILD=TRUE \
             -DDISABLE_LOCAL_BUILD=TRUE \
             -DDOCKER_REGISTRY=localhost:5000/ \
-            -DDOCKER_PLATFORM_ID=${{matrix.platform}}
+            -DDOCKER_PLATFORM_ID=${{ matrix.build_platform }}
 
       - name: Build timbre image locally
         run: cmake --build build -t build_docker_image
@@ -54,5 +100,5 @@ jobs:
       - name: Push image to GHCR
         run: |
           docker buildx imagetools create \
-            --tag ghcr.io/msfrank/timbre:latest \
+            --tag ghcr.io/msfrank/timbre/${{ matrix.build_platform }}/${{ matrix.build_type }}:latest \
             localhost:5000/timbre:latest
