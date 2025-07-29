@@ -58,7 +58,7 @@ jobs:
     env:
       PLATFORM: ${{ matrix.build_platform }}
 
-    runs-on: ${{ needs.define-matrix.outputs.platform_runner[env.PLATFORM] }}
+    runs-on: "${{ needs.define-matrix.outputs.platform_runner[env.PLATFORM] }}"
 
     services:
       registry:
