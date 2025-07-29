@@ -7,7 +7,7 @@ on:
 jobs:
   build-and-upload:
     name: Perform build and upload image to GHCR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     strategy:
       fail-fast: false
