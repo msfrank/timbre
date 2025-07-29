@@ -13,7 +13,7 @@ set(DOCKER_REQUIRES_SUDO "FALSE"
     CACHE BOOL
     "TRUE if the docker command requires sudo privileges. Defaults to 'FALSE'")
 
-set(DOCKER_PLATFORM ""
+set(DOCKER_PLATFORM_ID ""
     CACHE STRING
     "Target platform for docker image. If empty then the platform is auto-detected. Defaults to ''")
 
@@ -144,8 +144,8 @@ else()
 endif()
 
 # set the PLATFORM_ID
-if (DOCKER_PLATFORM)
-    set(PLATFORM_ID ${DOCKER_PLATFORM})
+if (DOCKER_PLATFORM_ID)
+    set(PLATFORM_ID ${DOCKER_PLATFORM_ID})
 else()
     set(PLATFORM_ID "linux/${CMAKE_SYSTEM_PROCESSOR}")
 endif()
