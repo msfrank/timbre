@@ -30,26 +30,12 @@ jobs:
       - name: Define runner platform map
         id: runner_platform
         run: |
-          {
-            cat << EOF
-            runner_platform={
-              "ubuntu-24.04-arm": "linux/arm64",
-              "ubuntu-24.04": "linux/x86_64"
-            }
-            EOF
-          } >> "$GITHUB_OUTPUT"
+          echo 'runner_platform={"ubuntu-24.04-arm": "linux/arm64", "ubuntu-24.04": "linux/x86_64"}' >> "$GITHUB_OUTPUT"
 
       - name: Define platform OS map
         id: runner_os
         run: |
-          {
-            cat << EOF
-            platform_os={
-              "ubuntu-24.04-arm": "Linux",
-              "ubuntu-24.04": "Linux"
-            }
-            EOF
-          } >> "$GITHUB_OUTPUT"
+          echo 'runner_os={"ubuntu-24.04-arm": "Linux", "ubuntu-24.04": "Linux"}' >> "$GITHUB_OUTPUT"
 
   build-and-upload:
     name: Perform build and upload image to GHCR
