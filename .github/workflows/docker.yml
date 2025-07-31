@@ -33,6 +33,13 @@ jobs:
       MULTI_PLATFORM_IMAGE_PATH: ghcr.io/msfrank/timbre:debug-latest
 
     steps:
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create multi-platform image
         run: |
           docker buildx imagetools create \
