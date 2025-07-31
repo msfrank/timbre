@@ -13,7 +13,8 @@ on:
         type: string
 
     outputs:
-      platform_image_path: ${{ jobs.build-platform-image.outputs.platform_image_path }}
+      platform_image_path:
+        value: ${{ jobs.build-platform-image.outputs.platform_image_path }}
 
 jobs:
   build-platform-image:
