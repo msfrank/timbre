@@ -33,8 +33,9 @@ jobs:
       MULTI_PLATFORM_IMAGE_PATH: ghcr.io/msfrank/timbre:debug-latest
 
     steps:
-      - name: Build image
+      - name: Create multi-platform image
         run: |
-          docker manifest create ${{ env.MULTI_PLATFORM_IMAGE_PATH }} \
-              --amend ${{ needs.build-linux-x86-64-debug.outputs.platform_image_path }} \
-              --amend ${{ needs.build-linux-arm64-debug.outputs.platform_image_path }}
+          docker buildx imagetools create
+            -t ${{ env.MULTI_PLATFORM_IMAGE_PATH }} \
+            ${{ needs.build-linux-x86-64-debug.outputs.platform_image_path }} \
+            ${{ needs.build-linux-arm64-debug.outputs.platform_image_path }}
