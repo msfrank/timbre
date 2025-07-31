@@ -95,7 +95,8 @@ endif()
 file(CONFIGURE OUTPUT ${GENERATE_DOCKERFILE_SCRIPT} CONTENT "\
 
 build_dir = 'build'
-targets_list = '${DECLARED_PACKAGES}'
+#targets_list = '${DECLARED_PACKAGES}'
+targets_list = ''
 docker_file = '${DOCKERFILE_PATH}'
 
 docker_preamble = f'''

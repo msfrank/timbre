@@ -13,6 +13,9 @@ RUN dnf install -y libxml2-devel zlib-devel zlib-static bzip2-devel ncurses-deve
 # install build dependencies
 RUN dnf install -y perl-File-Copy perl-File-Compare perl-IPC-Cmd perl-FindBin
 
+# clean the system package cache
+RUN dnf clean all
+
 # create user
 RUN adduser jrandomhacker
 

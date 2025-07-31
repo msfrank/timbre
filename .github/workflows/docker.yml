@@ -6,98 +6,35 @@ on:
 
 jobs:
 
-  define-matrix:
-    name: Define output variables which are shared across jobs
+  build-linux-arm64-debug:
+    name: Build linux ARM64 debug image
+    uses: ./.github/workflows/build-platform-image.yml
+    with:
+      build_type: Debug
+      build_runner: ubuntu-24.04-arm
+      platform_id: linux/arm64
+
+  build-linux-x86-64-debug:
+    name: Build linux x86_64 debug image
+    uses: ./.github/workflows/build-platform-image.yml
+    with:
+      build_type: Debug
+      build_runner: ubuntu-24.04
+      platform_id: linux/x86_64
+
+  build-multi-platform-debug-image:
+    name: Build multi-platform debug image
     runs-on: ubuntu-latest
-
-    outputs:
-      build_types: ${{ steps.build_types.outputs.build_types }}
-      build_runners: ${{ steps.build_runners.outputs.build_runners }}
-      runner_platform: ${{ steps.platform_runner.outputs.platform_runner }}
-      runner_os: ${{ steps.platform_os.outputs.platform_os }}
-
-    steps:
-      - name: Define build types
-        id: build_types
-        run: |
-          echo 'build_types=["Debug"]' >> "$GITHUB_OUTPUT"
-
-      - name: Define build runners
-        id: build_runners
-        run: |
-          echo 'build_runners=["ubuntu-24.04-arm", "ubuntu-24.04"]' >> "$GITHUB_OUTPUT"
-
-      - name: Define runner platform map
-        id: runner_platform
-        run: |
-          echo 'runner_platform={"ubuntu-24.04-arm": "linux/arm64", "ubuntu-24.04": "linux/x86_64"}' >> "$GITHUB_OUTPUT"
-
-      - name: Define platform OS map
-        id: runner_os
-        run: |
-          echo 'runner_os={"ubuntu-24.04-arm": "Linux", "ubuntu-24.04": "Linux"}' >> "$GITHUB_OUTPUT"
-
-  build-and-upload:
-    name: Perform build and upload image to GHCR
     needs:
-      - define-matrix
-
-    strategy:
-      fail-fast: true
-      matrix:
-        build_type: ${{ fromJSON(needs.define-matrix.outputs.build_types) }}
-        build_runner: ${{ fromJSON(needs.define-matrix.outputs.build_runners) }}
+      - build-linux-x86-64-debug
+      - build-linux-arm64-debug
 
     env:
-      BUILD_TYPE: ${{ matrix.build_type }}
-      BUILD_RUNNER: ${{ matrix.build_runner }}
-
-    runs-on: "${{ matrix.build_runner }}"
-
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
+      MULTI_PLATFORM_IMAGE_PATH: ghcr.io/msfrank/timbre:debug-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: network=host
-
-      - name: Set PLATFORM_ID environment variable
+      - name: Build image
         run: |
-          echo 'PLATFORM_ID="${{ needs.define-matrix.outputs.runner_platform[env.BUILD_RUNNER] }}"' >> $GITHUB_ENV
-
-      - name: Set PLATFORM_PATH environment variable
-        run: |
-          echo 'PLATFORM_PATH="$PLATFORM_ID/${BUILD_TYPE,,}"' >> $GITHUB_ENV
-
-      - name: Configure timbre build system
-        run: |
-          cmake -B build \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-            -DENABLE_DOCKER_BUILD=TRUE \
-            -DDISABLE_LOCAL_BUILD=TRUE \
-            -DDOCKER_REGISTRY=localhost:5000/ \
-            -DDOCKER_PLATFORM_ID=$PLATFORM_ID
-
-      - name: Build timbre image locally
-        run: cmake --build build -t build_docker_image
-
-      - name: Push image to GHCR
-        run: |
-          docker buildx imagetools create \
-            --tag ghcr.io/msfrank/timbre/$PLATFORM_PATH:latest \
-            localhost:5000/timbre:latest
+          docker manifest create ${{ env.MULTI_PLATFORM_IMAGE_PATH }} \
+              --amend ${{ needs.build-linux-x86-64-debug.outputs.platform_image_path }} \
+              --amend ${{ needs.build-linux-arm64-debug.outputs.platform_image_path }}

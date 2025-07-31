@@ -1,0 +1,68 @@
+name: build-platform-image.yml
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        required: true
+        type: string
+      build_runner:
+        required: true
+        type: string
+      platform_id:
+        required: true
+        type: string
+
+    outputs:
+      platform_image_path: ${{ jobs.build-platform-image.outputs.platform_image_path }}
+
+jobs:
+  build-platform-image:
+    name: Build platform docker image
+    runs-on: ${{ inputs.build_runner }}
+
+    outputs:
+      platform_image_path: ${{ steps.push-image-to-ghcr.outputs.platform_image_path }}
+
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: network=host
+
+      - name: Configure timbre build system
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=${{ inputs.build_type }}
+            -DENABLE_DOCKER_BUILD=TRUE \
+            -DDISABLE_LOCAL_BUILD=TRUE \
+            -DDOCKER_REGISTRY=localhost:5000/ \
+            -DDOCKER_PLATFORM_ID=${{ inputs.platform_id }}
+
+      - name: Build timbre image locally
+        run: cmake --build build -t build_docker_image
+
+      - name: Push image to GHCR
+        id: push-image-to-ghcr
+        env:
+          PLATFORM_IMAGE_PATH: ghcr.io/msfrank/timbre/${{ inputs.platform_id }}/${{ inputs.build_type }}
+        run: |
+          docker buildx imagetools create \
+            --tag $PLATFORM_IMAGE_PATH:latest \
+            localhost:5000/timbre:latest
+          echo "platform_image_path=\"$PLATFORM_IMAGE_PATH\"" >> $GITHUB_OUTPUT
