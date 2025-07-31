@@ -11,6 +11,10 @@ on:
       platform_id:
         required: true
         type: string
+      image_tag:
+        default: "latest"
+        required: false
+        type: string
 
     outputs:
       platform_image_path:
@@ -61,8 +65,11 @@ jobs:
       - name: Push image to GHCR
         id: push-image-to-ghcr
         env:
-          PLATFORM_IMAGE_PATH: ghcr.io/msfrank/timbre/${{ inputs.platform_id }}/${{ inputs.build_type }}:latest
+          PLATFORM_IMAGE_BASE: ghcr.io/msfrank/timbre/${{ inputs.platform_id }}
+          BUILD_TYPE: ${{ inputs.build_type }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
+          PLATFORM_IMAGE_PATH="$PLATFORM_IMAGE_BASE/${BUILD_TYPE,,}:$IMAGE_TAG"
           docker buildx imagetools create \
             --tag $PLATFORM_IMAGE_PATH \
             localhost:5000/timbre:latest
