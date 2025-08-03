@@ -183,7 +183,7 @@ add_custom_target(build_docker_base_image
 #   timbre(-debug):latest
 #   timbre-current-build
 
-set(PLATFORM_IMAGE_NAME "$<IF:$<BOOL:${IS_DEBUG_BUILD},timbre-debug,timbre>")
+set(PLATFORM_IMAGE_NAME "$<IF:$<BOOL:${IS_DEBUG_BUILD}>,timbre-debug,timbre>")
 add_custom_target(build_docker_image
     COMMAND ${DOCKER} build
     --platform ${PLATFORM_ID}
