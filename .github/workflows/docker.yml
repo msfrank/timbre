@@ -30,7 +30,7 @@ jobs:
       - build-linux-arm64-debug
 
     env:
-      MULTI_PLATFORM_IMAGE_PATH: ghcr.io/msfrank/timbre:debug-latest
+      MULTI_PLATFORM_IMAGE_PATH: ghcr.io/msfrank/timbre-debug
 
     steps:
       - name: Login to GHCR

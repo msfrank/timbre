@@ -72,5 +72,5 @@ jobs:
           PLATFORM_IMAGE_PATH="$PLATFORM_IMAGE_BASE/${BUILD_TYPE,,}:$IMAGE_TAG"
           docker buildx imagetools create \
             --tag $PLATFORM_IMAGE_PATH \
-            localhost:5000/timbre:latest
+            localhost:5000/timbre-current-build
           echo "platform_image_path=\"$PLATFORM_IMAGE_PATH\"" >> $GITHUB_OUTPUT

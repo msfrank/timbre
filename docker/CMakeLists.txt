@@ -81,16 +81,12 @@ set(CONAN_PROFILE_Linux_aarch64_Debug   "Linux.armv8.Debug")
 #
 #######################################################################
 
-set(DOCKERFILE_BASE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Dockerfile.base")
-set(DOCKERFILE_BASE_IMAGE "timbre/base:latest")
+set(DOCKERFILE_BASE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/base/Dockerfile")
+set(DOCKERFILE_BASE_IMAGE "base:latest")
 set(DOCKERFILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/Dockerfile")
 set(GENERATE_DOCKERFILE_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/generate_dockerfile.py")
 
-if (DOCKER_REGISTRY)
-    set(BASE_IMAGE "${DOCKER_REGISTRY}${DOCKERFILE_BASE_IMAGE}")
-else()
-    set(BASE_IMAGE ${DOCKERFILE_BASE_IMAGE})
-endif()
+set(BASE_IMAGE "${DOCKER_REGISTRY}${DOCKERFILE_BASE_IMAGE}")
 
 file(CONFIGURE OUTPUT ${GENERATE_DOCKERFILE_SCRIPT} CONTENT "\
 
@@ -164,14 +160,15 @@ if (NOT PROFILE_NAME)
     message(FATAL_ERROR "failed to determine conan profile name")
 endif()
 
-# build the timbre/base image
+# build the base image. t his creates the following tags:
+#   - base:latest
+
 add_custom_target(build_docker_base_image
     COMMAND ${DOCKER} build
     --platform ${PLATFORM_ID}
     --build-arg profile_name=${PROFILE_NAME}
     -o ${DOCKER_OUTPUT}
-    -t "${DOCKER_REGISTRY}timbre/base"
-    -t "${DOCKER_REGISTRY}timbre/base:${CMAKE_PROJECT_VERSION}"
+    -t "${DOCKER_REGISTRY}base:latest"
     -f ${DOCKERFILE_BASE_PATH}
     --label "org.opencontainers.image.version=${CMAKE_PROJECT_VERSION}"
     .
@@ -180,14 +177,22 @@ add_custom_target(build_docker_base_image
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
 
-# build the timbre image
+# build the timbre image. this creates the following tags:
+#   timbre(-debug)
+#   timbre(-debug):<project-version>
+#   timbre(-debug):latest
+#   timbre-current-build
+
+set(PLATFORM_IMAGE_NAME "$<IF:$<BOOL:${IS_DEBUG_BUILD},timbre-debug,timbre>")
 add_custom_target(build_docker_image
     COMMAND ${DOCKER} build
     --platform ${PLATFORM_ID}
     --build-arg is_debug_build=$<BOOL:${IS_DEBUG_BUILD}>
     -o ${DOCKER_OUTPUT}
-    -t "${DOCKER_REGISTRY}timbre"
-    -t "${DOCKER_REGISTRY}timbre:${CMAKE_PROJECT_VERSION}"
+    -t "${DOCKER_REGISTRY}${PLATFORM_IMAGE_NAME}"
+    -t "${DOCKER_REGISTRY}${PLATFORM_IMAGE_NAME}:${CMAKE_PROJECT_VERSION}"
+    -t "${DOCKER_REGISTRY}${PLATFORM_IMAGE_NAME}:latest"
+    -t "${DOCKER_REGISTRY}timbre-current-build"
     -f ${DOCKERFILE_PATH}
     --label "org.opencontainers.image.version=${CMAKE_PROJECT_VERSION}"
     --label "org.opencontainers.image.source=${CMAKE_PROJECT_HOMEPAGE_URL}"
