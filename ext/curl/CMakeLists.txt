@@ -1,2 +1,2 @@
 
-declare_package_export("curl" "8.5.0")
+declare_package_export("curl" "8.15.0")
