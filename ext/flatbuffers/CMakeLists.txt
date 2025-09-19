@@ -1,2 +1,2 @@
 
-declare_package_export("flatbuffers" "23.5.26")
+declare_package_export("flatbuffers" "25.2.10")
