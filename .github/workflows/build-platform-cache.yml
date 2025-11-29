@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: Install Dependencies
         run: |
-          apt-get install clang
+          sudo apt-get install clang
 
       - name: Checkout repository
         uses: actions/checkout@v4
