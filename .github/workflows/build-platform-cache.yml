@@ -34,6 +34,10 @@ jobs:
     runs-on: ${{ inputs.build_runner }}
 
     steps:
+      - name: Install Dependencies
+        run: |
+          apt-get install clang
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
