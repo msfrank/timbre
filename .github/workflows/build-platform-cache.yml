@@ -55,13 +55,13 @@ jobs:
         run: |
           cmake --build build -t stage1
           cmake --build build -t save-cache
-          mv build/cache_save.tgz timbre_stage1.tgz
+          mv build/cache_save.tgz stage1.tgz
 
       - name: Save stage1 to cache
         uses: actions/cache/save@v4
         with:
           path: stage1.tgz
-          key: "stage1-${{ inputs.conan_profile}}-${{ github.sha }}"
+          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
 
   build-stage2:
     name: Build platform stage 2
@@ -84,7 +84,7 @@ jobs:
       - name: Restore stage1 from cache
         uses: actions/cache/restore@v4
         with:
-          key: "stage1-${{ inputs.conan_profile}}-${{ github.sha }}"
+          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: stage1.tgz
           fail-on-cache-miss: true
 
@@ -102,7 +102,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: stage2.tgz
-          key: "stage2-${{ inputs.conan_profile}}-${{ github.sha }}"
+          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
 
   build-stage3:
     name: Build platform stage 3
@@ -125,7 +125,7 @@ jobs:
       - name: Restore stage2 from cache
         uses: actions/cache/restore@v4
         with:
-          key: "stage2-${{ inputs.conan_profile}}-${{ github.sha }}"
+          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: stage2.tgz
           fail-on-cache-miss: true
 
@@ -143,7 +143,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: stage3.tgz
-          key: "stage3-${{ inputs.conan_profile}}-${{ github.sha }}"
+          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
 
   build-stage4:
     name: Build platform stage 4
@@ -166,7 +166,7 @@ jobs:
       - name: Restore stage3 from cache
         uses: actions/cache/restore@v4
         with:
-          key: "stage3-${{ inputs.conan_profile}}-${{ github.sha }}"
+          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: stage3.tgz
           fail-on-cache-miss: true
 
@@ -184,7 +184,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: stage4.tgz
-          key: "stage4-${{ inputs.conan_profile}}-${{ github.sha }}"
+          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
 
   build-platform-cache:
     name: Build platform cache
@@ -198,7 +198,7 @@ jobs:
       - name: Restore stage4 from cache
         uses: actions/cache/restore@v4
         with:
-          key: "stage4-${{ inputs.conan_profile}}-${{ github.sha }}"
+          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: stage4.tgz
           fail-on-cache-miss: true
 
