@@ -38,19 +38,20 @@ endif()
 
 set(DECLARED_PACKAGES "" CACHE INTERNAL "declared packages")
 
-function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
+function(declare_package_export PACKAGE_NAME PACKAGE_VERSION STAGE_NUMBER)
 
-    # define a NAME_* and VERSION_* cache variable for the declared package
+    # define cache variables for the declared package
     set(PACKAGE_NAME_AND_VERSION "${PACKAGE_NAME}_${PACKAGE_VERSION}")
     set(NAME_${PACKAGE_NAME_AND_VERSION} ${PACKAGE_NAME} CACHE INTERNAL "declared name for ${PACKAGE_NAME_AND_VERSION}")
     set(VERSION_${PACKAGE_NAME_AND_VERSION} ${PACKAGE_VERSION} CACHE INTERNAL "declared version for ${PACKAGE_NAME_AND_VERSION}")
+    set(STAGE_${PACKAGE_NAME_AND_VERSION} ${STAGE_NUMBER} CACHE INTERNAL "declared stage for ${PACKAGE_NAME_AND_VERSION}")
 
     # append the package id ( in '<name>_<version>' format) to DECLARED_PACKAGES
     set(declared_packages_list ${DECLARED_PACKAGES})
     list(APPEND declared_packages_list ${PACKAGE_NAME_AND_VERSION})
     set(DECLARED_PACKAGES ${declared_packages_list} CACHE INTERNAL "declared packages")
 
-    message(STATUS "declared package ${PACKAGE_NAME}-${PACKAGE_VERSION}")
+    message(STATUS "declared package ${PACKAGE_NAME}-${PACKAGE_VERSION} (stage ${STAGE_NUMBER})")
 
 endfunction()
 
@@ -83,13 +84,21 @@ endif()
 #
 #######################################################################
 
+set(CONAN_HOME ""
+    CACHE STRING
+    "The conan home location. Defaults to ''")
+
 set(CONAN_PACKAGE_CHANNEL ""
     CACHE STRING
     "The packaging channel. Defaults to ''")
 
-set(CONAN_HOME ""
+set(CACHE_RESTORE_FILE ""
     CACHE STRING
-    "The conan home location. Defaults to ''")
+    "Restore file used to initialize the conan cache. Defaults to '' (cache is not initialized)")
+
+set(CACHE_SAVE_FILE "${CMAKE_BINARY_DIR}/cache_save.tgz"
+    CACHE STRING
+    "Save file containing the conan cache. Defaults to '<cmake-binary-dir>/cache_save.tgz'")
 
 
 #######################################################################
@@ -105,6 +114,9 @@ find_package(PkgConfig REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(LibXml2 REQUIRED)
+
+# find python installation
+find_package(Python3 REQUIRED)
 
 # find java installation
 find_package(Java REQUIRED)
@@ -155,49 +167,123 @@ endif ()
 
 #######################################################################
 #
-# define export and create targets
+# define export targets and build separate recipe lists for each stage
 #
 #######################################################################
 
-add_custom_target(export-all-packages ALL)
-add_custom_target(create-all-packages)
+add_custom_target(export-packages ALL)
+
+set(STAGE1_RECIPES "")
+set(STAGE2_RECIPES "")
+set(STAGE3_RECIPES "")
+set(STAGE4_RECIPES "")
 
 foreach (PACKAGE_NAME_AND_VERSION ${DECLARED_PACKAGES})
 
     set(PACKAGE_NAME ${NAME_${PACKAGE_NAME_AND_VERSION}})
     set(PACKAGE_VERSION ${VERSION_${PACKAGE_NAME_AND_VERSION}})
+    set(STAGE_NUMBER ${STAGE_${PACKAGE_NAME_AND_VERSION}})
+
+    set(RECIPE "${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py")
 
     # declare the export_<package-name>_<package-version> target
     set(EXPORT_TARGET_NAME "export_${PACKAGE_NAME}_${PACKAGE_VERSION}")
     if(CONAN_PACKAGE_CHANNEL)
         add_custom_target (
             ${EXPORT_TARGET_NAME}
-            COMMAND ${CONAN} export ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py --channel ${CONAN_PACKAGE_CHANNEL}
+            COMMAND ${CONAN} export ${RECIPE} --channel ${CONAN_PACKAGE_CHANNEL}
             COMMENT "exporting package ${PACKAGE_NAME}-${PACKAGE_VERSION} into channel '${CONAN_PACKAGE_CHANNEL}'"
-            SOURCES ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
+            SOURCES ${RECIPE}
         )
     else()
         add_custom_target (
             ${EXPORT_TARGET_NAME}
-            COMMAND ${CONAN} export ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
+            COMMAND ${CONAN} export ${RECIPE}
             COMMENT "exporting package ${PACKAGE_NAME}-${PACKAGE_VERSION}"
-            SOURCES ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
+            SOURCES ${RECIPE}
         )
     endif()
 
-    # add export target as a dependency of the export-all-packages target
-    add_dependencies(export-all-packages ${EXPORT_TARGET_NAME})
+    # add export target as a dependency of the export-packages target
+    add_dependencies(export-packages ${EXPORT_TARGET_NAME})
 
-    # declare the create_<package-name>_<package-version> target
-    set(CREATE_TARGET_NAME "create_${PACKAGE_NAME}_${PACKAGE_VERSION}")
-    add_custom_target (
-        ${CREATE_TARGET_NAME}
-        COMMAND ${CONAN} create ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py --build=missing --no-remote
-        COMMENT "creating package ${PACKAGE_NAME}-${PACKAGE_VERSION}"
-        SOURCES ${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py
-    )
-
-    # add create target as a dependency of the export-all-packages target
-    add_dependencies(create-all-packages ${CREATE_TARGET_NAME})
+    if (${STAGE_NUMBER} EQUAL 1)
+        list(APPEND STAGE1_RECIPES ${RECIPE})
+    elseif (${STAGE_NUMBER} EQUAL 2)
+        list(APPEND STAGE2_RECIPES ${RECIPE})
+    elseif (${STAGE_NUMBER} EQUAL 3)
+        list(APPEND STAGE3_RECIPES ${RECIPE})
+    elseif (${STAGE_NUMBER} EQUAL 4)
+        list(APPEND STAGE4_RECIPES ${RECIPE})
+    else()
+        message(FATAL_ERROR "invalid stage number '${STAGE_NUMBER}' for package ${PACKAGE_NAME_AND_VERSION}")
+    endif ()
 
 endforeach()
+
+add_custom_target(restore-cache)
+
+if (CACHE_RESTORE_FILE)
+    add_custom_target(restore-cache-file
+        COMMAND ${CONAN} cache restore ${CACHE_RESTORE_FILE}
+        COMMENT "restoring package cache from ${CACHE_RESTORE_FILE}"
+        )
+    add_dependencies(restore-cache, restore-cache-file)
+endif ()
+
+set(STAGE1_PACKAGE_CACHE_FILE ${CMAKE_BINARY_DIR}/timbre_stage1_cache.tgz)
+add_custom_target(stage1
+    COMMAND
+      ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build_stage.py
+        --conan-path ${Conan} $<$<NOT:$<STREQUAL:${CONAN_HOME},>>:"--conan-home ${CONAN_HOME}">
+        --binary-dir ${CMAKE_BINARY_DIR}
+        --cache-file ${STAGE1_PACKAGE_CACHE_FILE}
+        ${STAGE1_RECIPES}
+    BYPRODUCTS ${STAGE1_PACKAGE_CACHE_FILE}
+    DEPENDS restore-cache
+    COMMENT "building stage1 package cache"
+    )
+
+set(STAGE2_PACKAGE_CACHE_FILE ${CMAKE_BINARY_DIR}/timbre_stage2_cache.tgz)
+add_custom_target(stage2
+    COMMAND
+    ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build_stage.py
+    --conan-path ${Conan} $<$<NOT:$<STREQUAL:${CONAN_HOME},>>:"--conan-home ${CONAN_HOME}">
+    --binary-dir ${CMAKE_BINARY_DIR}
+    --cache-file ${STAGE2_PACKAGE_CACHE_FILE}
+    ${STAGE2_RECIPES}
+    BYPRODUCTS ${STAGE2_PACKAGE_CACHE_FILE}
+    DEPENDS restore-cache
+    COMMENT "building stage2 package cache"
+)
+
+set(STAGE3_PACKAGE_CACHE_FILE ${CMAKE_BINARY_DIR}/timbre_stage3_cache.tgz)
+add_custom_target(stage3
+    COMMAND
+    ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build_stage.py
+    --conan-path ${Conan} $<$<NOT:$<STREQUAL:${CONAN_HOME},>>:"--conan-home ${CONAN_HOME}">
+    --binary-dir ${CMAKE_BINARY_DIR}
+    --cache-file ${STAGE3_PACKAGE_CACHE_FILE}
+    ${STAGE3_RECIPES}
+    BYPRODUCTS ${STAGE3_PACKAGE_CACHE_FILE}
+    DEPENDS restore-cache
+    COMMENT "building stage3 package cache"
+)
+
+set(STAGE4_PACKAGE_CACHE_FILE ${CMAKE_BINARY_DIR}/timbre_stage4_cache.tgz)
+add_custom_target(stage4
+    COMMAND
+    ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build_stage.py
+    --conan-path ${Conan} $<$<NOT:$<STREQUAL:${CONAN_HOME},>>:"--conan-home ${CONAN_HOME}">
+    --binary-dir ${CMAKE_BINARY_DIR}
+    --cache-file ${STAGE4_PACKAGE_CACHE_FILE}
+    ${STAGE4_RECIPES}
+    BYPRODUCTS ${STAGE4_PACKAGE_CACHE_FILE}
+    DEPENDS restore-cache
+    COMMENT "building stage4 package cache"
+)
+
+add_custom_target(save-cache
+    COMMAND ${CONAN} cache save '*:*' --file=${CACHE_SAVE_FILE}
+    COMMENT "saving package cache to ${CACHE_SAVE_FILE}"
+)

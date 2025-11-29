@@ -1,2 +1,2 @@
 
-declare_package_export("rocksdb" "10.4.2")
+declare_package_export("rocksdb" "10.4.2" 2)

@@ -1,2 +1,2 @@
 
-declare_package_export("rats" "0.3.1")
+declare_package_export("rats" "0.3.1" 4)

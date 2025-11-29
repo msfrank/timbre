@@ -1,2 +1,2 @@
 
-declare_package_export("sqlite" "3.49.2")
+declare_package_export("sqlite" "3.49.2" 3)

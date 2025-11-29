@@ -1,2 +1,2 @@
 
-declare_package_export("apachearrow" "16.0.0")
+declare_package_export("apachearrow" "22.0.0" 4)
