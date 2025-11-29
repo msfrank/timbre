@@ -90,7 +90,7 @@ jobs:
 
       - name: Configure build system
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=stage1.tgz
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=$PWD/stage1.tgz
 
       - name: Build stage2
         run: |
@@ -131,7 +131,7 @@ jobs:
 
       - name: Configure build system
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=stage2.tgz
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=$PWD/stage2.tgz
 
       - name: Build stage3
         run: |
@@ -172,7 +172,7 @@ jobs:
 
       - name: Configure build system
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=stage3.tgz
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=$PWD/stage3.tgz
 
       - name: Build stage4
         run: |
