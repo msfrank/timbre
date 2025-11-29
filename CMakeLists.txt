@@ -228,7 +228,7 @@ if (CACHE_RESTORE_FILE)
         COMMAND ${CONAN} cache restore ${CACHE_RESTORE_FILE}
         COMMENT "restoring package cache from ${CACHE_RESTORE_FILE}"
         )
-    add_dependencies(restore-cache, restore-cache-file)
+    add_dependencies(restore-cache restore-cache-file)
 endif ()
 
 set(STAGE1_PACKAGE_CACHE_FILE ${CMAKE_BINARY_DIR}/timbre_stage1_cache.tgz)
