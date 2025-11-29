@@ -112,8 +112,8 @@ find_package(PkgConfig REQUIRED)
 
 # find required dependencies which may come from the platform
 find_package(ZLIB REQUIRED)
-find_package(BZip2 REQUIRED)
-find_package(LibXml2 REQUIRED)
+#find_package(BZip2 REQUIRED)
+#find_package(LibXml2 REQUIRED)
 
 # find python installation
 find_package(Python3 REQUIRED)
