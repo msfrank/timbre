@@ -26,6 +26,7 @@ permissions:
 
 env:
   CONAN_DEFAULT_PROFILE: ${{ inputs.conan_profile }}
+  ACTIONS_STEP_DEBUG: true
 
 jobs:
 
@@ -54,16 +55,13 @@ jobs:
         run: |
           cmake --build build -t stage1
           cmake --build build -t save-cache
+          mv build/cache_save.tgz timbre_stage1.tgz
 
       - name: Save stage1 to cache
         uses: actions/cache/save@v4
-        id: save-stage1
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
-          path: build/cache_save.tgz
+          path: stage1.tgz
           key: "stage1-${{ inputs.conan_profile}}-${{ github.sha }}"
-          enableCrossOsArchive: true
 
   build-stage2:
     name: Build platform stage 2
@@ -85,31 +83,26 @@ jobs:
 
       - name: Restore stage1 from cache
         uses: actions/cache/restore@v4
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
           key: "stage1-${{ inputs.conan_profile}}-${{ github.sha }}"
-          path: timbre_stage1.tgz
+          path: stage1.tgz
           fail-on-cache-miss: true
-          enableCrossOsArchive: true
 
       - name: Configure build system
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=timbre_stage1.tgz
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=stage1.tgz
 
       - name: Build stage2
         run: |
           cmake --build build -t stage2
           cmake --build build -t save-cache
+          mv build/cache_save.tgz stage2.tgz
 
       - name: Save stage2 to cache
         uses: actions/cache/save@v4
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
-          path: build/cache_save.tgz
+          path: stage2.tgz
           key: "stage2-${{ inputs.conan_profile}}-${{ github.sha }}"
-          enableCrossOsArchive: true
 
   build-stage3:
     name: Build platform stage 3
@@ -131,31 +124,26 @@ jobs:
 
       - name: Restore stage2 from cache
         uses: actions/cache/restore@v4
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
           key: "stage2-${{ inputs.conan_profile}}-${{ github.sha }}"
-          path: timbre_stage2.tgz
+          path: stage2.tgz
           fail-on-cache-miss: true
-          enableCrossOsArchive: true
 
       - name: Configure build system
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=timbre_stage2.tgz
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=stage2.tgz
 
       - name: Build stage3
         run: |
           cmake --build build -t stage3
           cmake --build build -t save-cache
+          mv build/cache_save.tgz stage3.tgz
 
       - name: Save stage3 to cache
         uses: actions/cache/save@v4
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
-          path: build/cache_save.tgz
+          path: stage3.tgz
           key: "stage3-${{ inputs.conan_profile}}-${{ github.sha }}"
-          enableCrossOsArchive: true
 
   build-stage4:
     name: Build platform stage 4
@@ -177,31 +165,26 @@ jobs:
 
       - name: Restore stage3 from cache
         uses: actions/cache/restore@v4
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
           key: "stage3-${{ inputs.conan_profile}}-${{ github.sha }}"
-          path: timbre_stage3.tgz
+          path: stage3.tgz
           fail-on-cache-miss: true
-          enableCrossOsArchive: true
 
       - name: Configure build system
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=timbre_stage3.tgz
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=stage3.tgz
 
       - name: Build stage4
         run: |
           cmake --build build -t stage4
           cmake --build build -t save-cache
+          mv build/cache_save.tgz stage4.tgz
 
       - name: Save stage4 to cache
         uses: actions/cache/save@v4
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
-          path: build/cache_save.tgz
+          path: stage4.tgz
           key: "stage4-${{ inputs.conan_profile}}-${{ github.sha }}"
-          enableCrossOsArchive: true
 
   build-platform-cache:
     name: Build platform cache
@@ -214,18 +197,15 @@ jobs:
     steps:
       - name: Restore stage4 from cache
         uses: actions/cache/restore@v4
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
           key: "stage4-${{ inputs.conan_profile}}-${{ github.sha }}"
-          path: timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
+          path: stage4.tgz
           fail-on-cache-miss: true
-          enableCrossOsArchive: true
+
+      - run: mv stage4.tgz timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v3
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
           subject-path: timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
 
