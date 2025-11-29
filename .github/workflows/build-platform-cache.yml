@@ -58,6 +58,8 @@ jobs:
       - name: Save stage1 to cache
         uses: actions/cache/save@v4
         id: save-stage1
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           path: build/cache_save.tgz
           key: "stage1-${{ inputs.conan_profile}}-${{ github.sha }}"
@@ -82,6 +84,8 @@ jobs:
 
       - name: Restore stage1 from cache
         uses: actions/cache/restore@v4
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           key: "stage1-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: timbre_stage1.tgz
@@ -98,7 +102,8 @@ jobs:
 
       - name: Save stage2 to cache
         uses: actions/cache/save@v4
-        id: save-stage2
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           path: build/cache_save.tgz
           key: "stage2-${{ inputs.conan_profile}}-${{ github.sha }}"
@@ -123,6 +128,8 @@ jobs:
 
       - name: Restore stage2 from cache
         uses: actions/cache/restore@v4
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           key: "stage2-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: timbre_stage2.tgz
@@ -139,7 +146,8 @@ jobs:
 
       - name: Save stage3 to cache
         uses: actions/cache/save@v4
-        id: save-stage3
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           path: build/cache_save.tgz
           key: "stage3-${{ inputs.conan_profile}}-${{ github.sha }}"
@@ -164,6 +172,8 @@ jobs:
 
       - name: Restore stage3 from cache
         uses: actions/cache/restore@v4
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           key: "stage3-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: timbre_stage3.tgz
@@ -180,7 +190,8 @@ jobs:
 
       - name: Save stage4 to cache
         uses: actions/cache/save@v4
-        id: save-stage4
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           path: build/cache_save.tgz
           key: "stage4-${{ inputs.conan_profile}}-${{ github.sha }}"
@@ -196,6 +207,8 @@ jobs:
     steps:
       - name: Restore stage4 from cache
         uses: actions/cache/restore@v4
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           key: "stage4-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
@@ -203,11 +216,15 @@ jobs:
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v3
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           subject-path: timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
 
       - name: Upload platform cache artifact
         uses: actions/upload-artifact@v4
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           name: timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
           path: timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
