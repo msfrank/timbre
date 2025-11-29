@@ -284,6 +284,6 @@ add_custom_target(stage4
 )
 
 add_custom_target(save-cache
-    COMMAND ${CONAN} cache save '*:*' --file=${CACHE_SAVE_FILE}
+    COMMAND ${CONAN} cache save '*:*' --no-source --file=${CACHE_SAVE_FILE}
     COMMENT "saving package cache to ${CACHE_SAVE_FILE}"
 )

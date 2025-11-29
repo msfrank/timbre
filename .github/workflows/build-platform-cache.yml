@@ -60,7 +60,7 @@ jobs:
         id: save-stage1
         with:
           path: build/cache_save.tgz
-          key: "stage1-${{ inputs.platform_id}}-${{ github.sha }}"
+          key: "stage1-${{ inputs.conan_profile}}-${{ github.sha }}"
 
   build-stage2:
     name: Build platform stage 2
@@ -68,6 +68,10 @@ jobs:
     needs: build-stage1
 
     steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install clang
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -79,7 +83,7 @@ jobs:
       - name: Restore stage1 from cache
         uses: actions/cache/restore@v4
         with:
-          key: "stage1-${{ inputs.platform_id}}-${{ github.sha }}"
+          key: "stage1-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: timbre_stage1.tgz
           fail-on-cache-miss: true
 
@@ -97,7 +101,7 @@ jobs:
         id: save-stage2
         with:
           path: build/cache_save.tgz
-          key: "stage2-${{ inputs.platform_id}}-${{ github.sha }}"
+          key: "stage2-${{ inputs.conan_profile}}-${{ github.sha }}"
 
   build-stage3:
     name: Build platform stage 3
@@ -105,6 +109,10 @@ jobs:
     needs: build-stage2
 
     steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install clang
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -116,7 +124,7 @@ jobs:
       - name: Restore stage2 from cache
         uses: actions/cache/restore@v4
         with:
-          key: "stage2-${{ inputs.platform_id}}-${{ github.sha }}"
+          key: "stage2-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: timbre_stage2.tgz
           fail-on-cache-miss: true
 
@@ -134,7 +142,7 @@ jobs:
         id: save-stage3
         with:
           path: build/cache_save.tgz
-          key: "stage3-${{ inputs.platform_id}}-${{ github.sha }}"
+          key: "stage3-${{ inputs.conan_profile}}-${{ github.sha }}"
 
   build-stage4:
     name: Build platform stage 4
@@ -142,6 +150,10 @@ jobs:
     needs: build-stage3
 
     steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install clang
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -153,7 +165,7 @@ jobs:
       - name: Restore stage3 from cache
         uses: actions/cache/restore@v4
         with:
-          key: "stage3-${{ inputs.platform_id}}-${{ github.sha }}"
+          key: "stage3-${{ inputs.conan_profile}}-${{ github.sha }}"
           path: timbre_stage3.tgz
           fail-on-cache-miss: true
 
@@ -171,7 +183,7 @@ jobs:
         id: save-stage4
         with:
           path: build/cache_save.tgz
-          key: "stage4-${{ inputs.platform_id}}-${{ github.sha }}"
+          key: "stage4-${{ inputs.conan_profile}}-${{ github.sha }}"
 
   build-platform-cache:
     name: Build platform cache
@@ -185,21 +197,21 @@ jobs:
       - name: Restore stage4 from cache
         uses: actions/cache/restore@v4
         with:
-          key: "stage4-$JOB_KEY"
-          path: timbre-${{ inputs.platform_id }}-${{ github.sha }}.tgz
+          key: "stage4-${{ inputs.conan_profile}}-${{ github.sha }}"
+          path: timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
           fail-on-cache-miss: true
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v3
         with:
-          subject-path: timbre-${{ inputs.platform_id }}-${{ github.sha }}.tgz
+          subject-path: timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
 
       - name: Upload platform cache artifact
         uses: actions/upload-artifact@v4
         with:
-          name: timbre-${{ inputs.platform_id }}-${{ github.sha }}.tgz
-          path: timbre-${{ inputs.platform_id }}-${{ github.sha }}.tgz
+          name: timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
+          path: timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
 
       - id: upload-platform-cache
         run: |
-          echo "cache_artifact_key=timbre-${{ inputs.platform_id }}-${{ github.sha }}.tgz" >> $GITHUB_OUTPUT
+          echo "cache_artifact_key=timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz" >> $GITHUB_OUTPUT
