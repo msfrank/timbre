@@ -56,6 +56,7 @@ jobs:
 
       - name: Build stage1
         run: |
+          cmake --build build -t export-packages
           cmake --build build -t stage1
           cmake --build build -t save-cache
           mv build/cache_save.tgz stage1.tgz
@@ -97,6 +98,7 @@ jobs:
 
       - name: Build stage2
         run: |
+          cmake --build build -t export-packages
           cmake --build build -t stage2
           cmake --build build -t save-cache
           mv build/cache_save.tgz stage2.tgz
@@ -138,6 +140,7 @@ jobs:
 
       - name: Build stage3
         run: |
+          cmake --build build -t export-packages
           cmake --build build -t stage3
           cmake --build build -t save-cache
           mv build/cache_save.tgz stage3.tgz
@@ -179,6 +182,7 @@ jobs:
 
       - name: Build stage4
         run: |
+          cmake --build build -t export-packages
           cmake --build build -t stage4
           cmake --build build -t save-cache
           mv build/cache_save.tgz stage4.tgz
