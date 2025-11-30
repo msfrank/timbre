@@ -28,6 +28,9 @@ LLVM's clang, Visual Studio, Apple Xcode, Intel oneAPI).
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.cache_variables['ENABLE_ROARING_TESTS'] = 'OFF'
+        tc.cache_variables['ENABLE_ROARING_MICROBENCHMARKS'] = 'OFF'
+        tc.cache_variables['ROARING_USE_CPM'] = 'OFF'
         tc.generate()
         deps = CMakeDeps(self)
         deps.generate()
@@ -36,10 +39,9 @@ LLVM's clang, Visual Studio, Apple Xcode, Intel oneAPI).
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
+        cmake.install()
 
     def package(self):
-        cmake = CMake(self)
-        cmake.install()
         copy(self, "*", join(self.build_folder, 'include'), join(self.package_folder, "include"))
         copy(self, "*", join(self.build_folder, 'lib'), join(self.package_folder, "lib"))
 
