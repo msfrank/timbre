@@ -6,24 +6,24 @@ on:
 
 jobs:
 
-#  build-ubuntu2404-arm64-debug:
-#    name: Build Ubuntu 24.04 ARM64 debug image
-#    uses: ./.github/workflows/build-platform-cache.yml
-#    with:
-#      build_type: Debug
-#      build_runner: ubuntu-24.04-arm
-#      platform_id: linux-arm64
-#      conan_profile: Ubuntu24.04-armv8-Debug
-#      install_dependencies_script: |
-#        sudo apt-get install clang
-
-  build-macos-arm64-debug:
-    name: Build MacOS ARM64 debug image
+  build-ubuntu2404-arm64-debug:
+    name: Build Ubuntu 24.04 ARM64 debug image
     uses: ./.github/workflows/build-platform-cache.yml
     with:
       build_type: Debug
-      build_runner: macos-15
-      platform_id: macos-arm64
-      conan_profile: MacOS-armv8-Debug
+      build_runner: ubuntu-24.04-arm
+      platform_id: linux-arm64
+      conan_profile: Ubuntu24.04-armv8-Debug
       install_dependencies_script: |
-        brew install autoconf automake libtool
+        sudo apt-get install clang autoconf automake libtool
+
+#  build-macos-arm64-debug:
+#    name: Build MacOS ARM64 debug image
+#    uses: ./.github/workflows/build-platform-cache.yml
+#    with:
+#      build_type: Debug
+#      build_runner: macos-15
+#      platform_id: macos-arm64
+#      conan_profile: MacOS-armv8-Debug
+#      install_dependencies_script: |
+#        brew install autoconf automake libtool
