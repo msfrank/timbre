@@ -14,6 +14,8 @@ jobs:
 #      build_runner: ubuntu-24.04-arm
 #      platform_id: linux-arm64
 #      conan_profile: Ubuntu24.04-armv8-Debug
+#      install_dependencies_script: |
+#        sudo apt-get install clang
 
   build-macos-arm64-debug:
     name: Build MacOS ARM64 debug image

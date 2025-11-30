@@ -14,6 +14,9 @@ on:
       conan_profile:
         required: true
         type: string
+      install_dependencies_script:
+        required: false
+        type: string
 
     outputs:
       cache_artifact_key:
@@ -36,8 +39,8 @@ jobs:
 
     steps:
       - name: Install Dependencies
-        run: |
-          sudo apt-get install clang
+        if: ${{ inputs.install_dependencies_script != '' }}
+        run: ${{ inputs.install_dependencies_script }}
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -70,8 +73,8 @@ jobs:
 
     steps:
       - name: Install Dependencies
-        run: |
-          sudo apt-get install clang
+        if: ${{ inputs.install_dependencies_script != '' }}
+        run: ${{ inputs.install_dependencies_script }}
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -111,8 +114,8 @@ jobs:
 
     steps:
       - name: Install Dependencies
-        run: |
-          sudo apt-get install clang
+        if: ${{ inputs.install_dependencies_script != '' }}
+        run: ${{ inputs.install_dependencies_script }}
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -152,8 +155,8 @@ jobs:
 
     steps:
       - name: Install Dependencies
-        run: |
-          sudo apt-get install clang
+        if: ${{ inputs.install_dependencies_script != '' }}
+        run: ${{ inputs.install_dependencies_script }}
 
       - name: Checkout repository
         uses: actions/checkout@v4
