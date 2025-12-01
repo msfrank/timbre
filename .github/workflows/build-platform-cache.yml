@@ -33,8 +33,8 @@ env:
 
 jobs:
 
-  build-stage1:
-    name: Build platform stage 1
+  export-recipes:
+    name: Export conan recipes to the cache
     runs-on: ${{ inputs.build_runner }}
 
     steps:
@@ -49,6 +49,34 @@ jobs:
         uses: conan-io/setup-conan@v1
         with:
           config_urls: 'conan2/'
+          cache_packages: true
+
+      - name: Configure build system
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }}
+
+      - name: Export recipes
+        run: |
+          cmake --build build -t export-packages
+
+  build-stage1:
+    name: Build platform stage 1
+    runs-on: ${{ inputs.build_runner }}
+    needs: export-recipes
+
+    steps:
+      - name: Install Dependencies
+        if: ${{ inputs.install_dependencies_script != '' }}
+        run: ${{ inputs.install_dependencies_script }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Conan
+        uses: conan-io/setup-conan@v1
+        with:
+          config_urls: 'conan2/'
+          cache_packages: true
 
       - name: Configure build system
         run: |
@@ -56,16 +84,7 @@ jobs:
 
       - name: Build stage1
         run: |
-          cmake --build build -t export-packages
           cmake --build build -t stage1
-          cmake --build build -t save-cache
-          mv build/cache_save.tgz stage1.tgz
-
-      - name: Save stage1 to cache
-        uses: actions/cache/save@v4
-        with:
-          path: stage1.tgz
-          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
 
   build-stage2:
     name: Build platform stage 2
@@ -84,30 +103,15 @@ jobs:
         uses: conan-io/setup-conan@v1
         with:
           config_urls: 'conan2/'
-
-      - name: Restore stage1 from cache
-        uses: actions/cache/restore@v4
-        with:
-          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
-          path: stage1.tgz
-          fail-on-cache-miss: true
+          cache_packages: true
 
       - name: Configure build system
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=$PWD/stage1.tgz
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }}
 
       - name: Build stage2
         run: |
-          cmake --build build -t export-packages
           cmake --build build -t stage2
-          cmake --build build -t save-cache
-          mv build/cache_save.tgz stage2.tgz
-
-      - name: Save stage2 to cache
-        uses: actions/cache/save@v4
-        with:
-          path: stage2.tgz
-          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
 
   build-stage3:
     name: Build platform stage 3
@@ -126,30 +130,15 @@ jobs:
         uses: conan-io/setup-conan@v1
         with:
           config_urls: 'conan2/'
-
-      - name: Restore stage2 from cache
-        uses: actions/cache/restore@v4
-        with:
-          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
-          path: stage2.tgz
-          fail-on-cache-miss: true
+          cache_packages: true
 
       - name: Configure build system
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCACHE_RESTORE_FILE=$PWD/stage2.tgz
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }}
 
       - name: Build stage3
         run: |
-          cmake --build build -t export-packages
           cmake --build build -t stage3
-          cmake --build build -t save-cache
-          mv build/cache_save.tgz stage3.tgz
-
-      - name: Save stage3 to cache
-        uses: actions/cache/save@v4
-        with:
-          path: stage3.tgz
-          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
 
 #  build-stage4:
 #    name: Build platform stage 4
@@ -202,14 +191,21 @@ jobs:
       cache_artifact_key: ${{ steps.upload-platform-cache.outputs.cache_artifact_key }}
 
     steps:
-      - name: Restore stage3 from cache
-        uses: actions/cache/restore@v4
-        with:
-          key: "timbre-${{ inputs.conan_profile}}-${{ github.sha }}"
-          path: stage3.tgz
-          fail-on-cache-miss: true
+      - name: Install Dependencies
+        if: ${{ inputs.install_dependencies_script != '' }}
+        run: ${{ inputs.install_dependencies_script }}
 
-      - run: mv stage3.tgz timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Conan
+        uses: conan-io/setup-conan@v1
+        with:
+          config_urls: 'conan2/'
+          cache_packages: true
+
+      - name: Restore stage3 from cache
+        run: conan cache save '*:*' --no-source --file=timbre-${{ inputs.conan_profile }}-${{ github.sha }}.tgz
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v3
