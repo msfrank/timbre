@@ -73,13 +73,13 @@ jobs:
       - name: Determine build order
         id: determine-build-order
         run: |
-          BUILD_ORDER=$(scripts/determine_build_order.py \
+          scripts/determine_build_order.py \
             --conan-profile ${{ inputs.conan_profile }} \
             --conan-remote conan.s10y.co \
             --remote-auth \
-            --scan-cache 2>/dev/null)
-          echo "::add-mask::$BUILD_ORDER"
-          printf '%s\n' "build-order=$BUILD_ORDER" >> $GITHUB_OUTPUT
+            --scan-cache \
+            --output-path build_order.json
+          printf '%s\n' "build-order=$(cat build_order.json)" >> $GITHUB_OUTPUT
 
   build-platform:
     needs: generate-build-order

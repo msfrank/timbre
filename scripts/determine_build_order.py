@@ -13,6 +13,7 @@ parser.add_argument('--conan-home', default=None)
 parser.add_argument('--conan-profile', default=None)
 parser.add_argument('--conan-build-profile', default=None)
 parser.add_argument('--conan-remote', default=None)
+parser.add_argument('--output-path', default=None)
 parser.add_argument('--remote-auth', action='store_true')
 parser.add_argument('--scan-cache', action='store_true')
 parser.add_argument('--debug', action='store_true')
@@ -74,4 +75,8 @@ for list in graph_json:
         if package['binary'] == 'Build':
             build_order.append(node['ref'])
 
-print(dumps(build_order))
+if args.output_path:
+    with open(args.output_path, 'w') as f:
+        f.write(dumps(build_order))
+else:
+    print(dumps(build_order))
