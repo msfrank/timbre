@@ -17,6 +17,13 @@ on:
       install_dependencies_script:
         required: false
         type: string
+    secrets:
+      CONAN_CLIENT_CERT:
+        required: true
+      CONAN_CLIENT_KEY:
+        required: true
+      CONAN_CREDENTIALS_JSON:
+        required: true
 
 permissions:
   id-token: write

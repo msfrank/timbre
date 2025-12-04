@@ -9,10 +9,7 @@ jobs:
   build-ubuntu2404-arm64-debug:
     name: Build Ubuntu 24.04 ARM64 debug image
     uses: ./.github/workflows/build-platform.yml
-    secrets:
-      CONAN_CLIENT_CERT: ${{ secrets.CONAN_CLIENT_CERT }}
-      CONAN_CLIENT_KEY: ${{ secrets.CONAN_CLIENT_KEY }}
-      CONAN_CREDENTIALS_JSON: ${{ secrets.CONAN_CREDENTIALS_JSON }}
+    secrets: inherit
     with:
       build_type: Debug
       build_runner: ubuntu-24.04-arm

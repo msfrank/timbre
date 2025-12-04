@@ -14,6 +14,13 @@ on:
       install_dependencies_script:
         required: false
         type: string
+    secrets:
+      CONAN_CLIENT_CERT:
+        required: true
+      CONAN_CLIENT_KEY:
+        required: true
+      CONAN_CREDENTIALS_JSON:
+        required: true
 
 permissions:
   id-token: write
@@ -88,21 +95,24 @@ jobs:
 
   build-platform:
     needs: generate-build-order
-    runs-on: ${{ inputs.build_runner }}
     strategy:
       max-parallel: 1
       matrix:
         build-order: ${{ needs.generate-build-order.outputs.build-order }}
-    secrets:
-      CONAN_CLIENT_CERT: ${{ secrets.CONAN_CLIENT_CERT }}
-      CONAN_CLIENT_KEY: ${{ secrets.CONAN_CLIENT_KEY }}
-      CONAN_CREDENTIALS_JSON: ${{ secrets.CONAN_CREDENTIALS_JSON }}
+    uses: ./.github/workflows/build-package.yml
+    secrets: inherit
+    with:
+      package_ref: ${{ matrix.build-order }}
+      build_runner: ${{ inputs.build_runner }}
+      build_type: ${{ inputs.build_type }}
+      conan_profile: ${{ inputs.conan_profile }}
+      install_dependencies_script: ${{ inputs.install_dependencies_script }}
 
-    steps:
-      - uses: ./.github/workflows/build-package.yml
-        with:
-          package_ref: ${{ matrix.build-order }}
-          build_runner: ${{ inputs.build_runner }}
-          build_type: ${{ inputs.build_type }}
-          conan_profile: ${{ inputs.conan_profile }}
-          install_dependencies_script: ${{ inputs.install_dependencies_script }}
+#    steps:
+#      - uses: ./.github/workflows/build-package.yml
+#        with:
+#          package_ref: ${{ matrix.build-order }}
+#          build_runner: ${{ inputs.build_runner }}
+#          build_type: ${{ inputs.build_type }}
+#          conan_profile: ${{ inputs.conan_profile }}
+#          install_dependencies_script: ${{ inputs.install_dependencies_script }}
