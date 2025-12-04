@@ -85,7 +85,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        build-order: ${{ needs.generate-build-order.outputs.build-order }}
+        build-order: ${{ fromJSON(needs.generate-build-order.outputs.build-order) }}
     uses: ./.github/workflows/build-package.yml
     secrets: inherit
     with:
