@@ -61,7 +61,6 @@ jobs:
           echo "$CONAN_CLIENT_CERT" > client.crt
           echo "$CONAN_CLIENT_KEY" > client.key
           echo "$CONAN_CREDENTIALS_JSON" > ${{steps.setup-conan.outputs.conan-home}}/credentials.json
-          echo "" > $GITHUB_ENV
 
       - name: Configure build system
         run: |
@@ -79,6 +78,7 @@ jobs:
             --conan-remote conan.s10y.co \
             --remote-auth \
             --scan-cache 2>/dev/null)
+          echo "::add-mask::$BUILD_ORDER"
           printf '%s\n' "build-order=$BUILD_ORDER" >> $GITHUB_OUTPUT
 
   build-platform:
