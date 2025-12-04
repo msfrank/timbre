@@ -47,8 +47,8 @@ jobs:
 
       - name: Configure conan client cert and credentials
         run: |
-          echo "${{ secrets.CONAN_CLIENT_CERT }}" > client.crt
-          echo "${{ secrets.CONAN_CLIENT_KEY }}" > client.key
+          echo "${{ secrets.CONAN_CLIENT_CERT }}" > /tmp/client.crt
+          echo "${{ secrets.CONAN_CLIENT_KEY }}" > /tmp/client.key
           echo "${{ secrets.CONAN_CREDENTIALS_JSON }}" > ${{steps.setup-conan.outputs.conan-home}}/credentials.json
 
       - name: Configure build system
