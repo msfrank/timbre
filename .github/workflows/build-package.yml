@@ -59,7 +59,7 @@ jobs:
       - name: Build package
         run: |
           scripts/install_and_upload_package.py \
-            --debug
+            --debug \
             --conan-profile ${{ inputs.conan_profile }} \
             --conan-remote conan.s10y.co \
             --remote-auth \
