@@ -54,6 +54,7 @@ jobs:
           echo "$CONAN_CLIENT_CERT" > client.crt
           echo "$CONAN_CLIENT_KEY" > client.key
           echo "$CONAN_CREDENTIALS_JSON" > ${{steps.setup-conan.outputs.conan-home}}/credentials.json
+          cat client.crt
           conan remote auth -vvv conan.s10y.co
 
       - name: Configure build system
