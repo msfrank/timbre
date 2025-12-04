@@ -79,7 +79,7 @@ jobs:
             --conan-remote conan.s10y.co \
             --remote-auth \
             --scan-cache 2>/dev/null)
-          echo "build-order=$BUILD_ORDER" >> $GITHUB_ENV
+          printf '%s\n' "build-order=$BUILD_ORDER" >> $GITHUB_OUTPUT
 
   build-platform:
     needs: generate-build-order
