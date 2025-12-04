@@ -33,6 +33,7 @@ env:
 jobs:
 
   generate-build-order:
+    name: Generate the build order matrix
     runs-on: ${{ inputs.build_runner }}
 
     outputs:
