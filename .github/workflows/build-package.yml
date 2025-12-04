@@ -59,8 +59,8 @@ jobs:
           CONAN_CLIENT_KEY: ${{ secrets.CONAN_CLIENT_KEY }}
           CONAN_CREDENTIALS_JSON: ${{ secrets.CONAN_CREDENTIALS_JSON }}
         run: |
-          echo "$CONAN_CLIENT_CERT" > client.crt
-          echo "$CONAN_CLIENT_KEY" > client.key
+          echo "$CONAN_CLIENT_CERT" > /tmp/client.crt
+          echo "$CONAN_CLIENT_KEY" > /tmp/client.key
           echo "$CONAN_CREDENTIALS_JSON" > ${{steps.setup-conan.outputs.conan-home}}/credentials.json
 
       - name: Configure build system
