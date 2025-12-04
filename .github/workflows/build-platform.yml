@@ -61,7 +61,7 @@ jobs:
           echo "$CONAN_CLIENT_CERT" > client.crt
           echo "$CONAN_CLIENT_KEY" > client.key
           echo "$CONAN_CREDENTIALS_JSON" > ${{steps.setup-conan.outputs.conan-home}}/credentials.json
-          conan remote auth -vvv conan.s10y.co
+          echo "" > $GITHUB_ENV
 
       - name: Configure build system
         run: |
