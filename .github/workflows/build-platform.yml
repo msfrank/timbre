@@ -93,6 +93,10 @@ jobs:
       max-parallel: 1
       matrix:
         build-order: ${{ needs.generate-build-order.outputs.build-order }}
+    secrets:
+      CONAN_CLIENT_CERT: ${{ secrets.CONAN_CLIENT_CERT }}
+      CONAN_CLIENT_KEY: ${{ secrets.CONAN_CLIENT_KEY }}
+      CONAN_CREDENTIALS_JSON: ${{ secrets.CONAN_CREDENTIALS_JSON }}
 
     steps:
       - uses: ./.github/workflows/build-package.yml
