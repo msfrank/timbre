@@ -74,23 +74,13 @@ jobs:
       - name: Determine build order
         id: determine-build-order
         run: |
-          scripts/determine_build_order.py \
-            --debug \
+          BUILD_ORDER=$(scripts/determine_build_order.py \
             --conan-profile ${{ inputs.conan_profile }} \
             --conan-remote conan.s10y.co \
             --remote-auth \
-            --scan-cache
-
-#      - name: Determine build order
-#        id: determine-build-order
-#        run: |
-#          BUILD_ORDER=$(scripts/determine_build_order.py \
-#            --debug \
-#            --conan-profile ${{ inputs.conan_profile }} \
-#            --conan-remote conan.s10y.co \
-#            --remote-auth \
-#            --scan-cache)
-#          echo "build-order=\"$BUILD_ORDER\"" >> $GITHUB_OUTPUT
+            --scan-cache 2>/dev/null)
+          echo "build-order=\"$BUILD_ORDER\""
+          echo "build-order=\"$BUILD_ORDER\"" >> $GITHUB_OUTPUT
 
   build-platform:
     needs: generate-build-order
@@ -106,12 +96,3 @@ jobs:
       build_type: ${{ inputs.build_type }}
       conan_profile: ${{ inputs.conan_profile }}
       install_dependencies_script: ${{ inputs.install_dependencies_script }}
-
-#    steps:
-#      - uses: ./.github/workflows/build-package.yml
-#        with:
-#          package_ref: ${{ matrix.build-order }}
-#          build_runner: ${{ inputs.build_runner }}
-#          build_type: ${{ inputs.build_type }}
-#          conan_profile: ${{ inputs.conan_profile }}
-#          install_dependencies_script: ${{ inputs.install_dependencies_script }}
