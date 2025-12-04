@@ -63,6 +63,7 @@ jobs:
         id: determine-build-order
         run: |
           BUILD_ORDER=$(scripts/determine_build_order.py \
+            --debug
             --conan-profile ${{ inputs.conan_profile }} \
             --conan-remote conan.s10y.co \
             --remote-auth \
