@@ -112,8 +112,6 @@ find_package(PkgConfig REQUIRED)
 
 # find required dependencies which may come from the platform
 find_package(ZLIB REQUIRED)
-#find_package(BZip2 REQUIRED)
-#find_package(LibXml2 REQUIRED)
 
 # find python installation
 find_package(Python3 REQUIRED)
@@ -171,18 +169,21 @@ endif ()
 #
 #######################################################################
 
-add_custom_target(export-packages ALL)
+add_custom_target(export-packages)
 
-set(STAGE1_RECIPES "")
-set(STAGE2_RECIPES "")
-set(STAGE3_RECIPES "")
-set(STAGE4_RECIPES "")
+set(EXPORT_ERROR "")
 
 foreach (PACKAGE_NAME_AND_VERSION ${DECLARED_PACKAGES})
 
     set(PACKAGE_NAME ${NAME_${PACKAGE_NAME_AND_VERSION}})
     set(PACKAGE_VERSION ${VERSION_${PACKAGE_NAME_AND_VERSION}})
     set(STAGE_NUMBER ${STAGE_${PACKAGE_NAME_AND_VERSION}})
+
+    if (${PACKAGE_${PACKAGE_NAME}})
+        set(EXPORT_ERROR "package '${PACKAGE_NAME}' has already been exported with version ${PACKAGE_${PACKAGE_NAME}}")
+    else ()
+        set(PACKAGE_${PACKAGE_NAME} ${PACKAGE_VERSION})
+    endif ()
 
     set(RECIPE "${CMAKE_SOURCE_DIR}/ext/${PACKAGE_NAME}/${PACKAGE_VERSION}/conanfile.py")
 
@@ -207,19 +208,11 @@ foreach (PACKAGE_NAME_AND_VERSION ${DECLARED_PACKAGES})
     # add export target as a dependency of the export-packages target
     add_dependencies(export-packages ${EXPORT_TARGET_NAME})
 
-    if (${STAGE_NUMBER} EQUAL 1)
-        list(APPEND STAGE1_RECIPES ${RECIPE})
-    elseif (${STAGE_NUMBER} EQUAL 2)
-        list(APPEND STAGE2_RECIPES ${RECIPE})
-    elseif (${STAGE_NUMBER} EQUAL 3)
-        list(APPEND STAGE3_RECIPES ${RECIPE})
-    elseif (${STAGE_NUMBER} EQUAL 4)
-        list(APPEND STAGE4_RECIPES ${RECIPE})
-    else()
-        message(FATAL_ERROR "invalid stage number '${STAGE_NUMBER}' for package ${PACKAGE_NAME_AND_VERSION}")
-    endif ()
-
 endforeach()
+
+if (NOT ${EXPORT_ERROR} STREQUAL "")
+    message(FATAL_ERROR ${EXPORT_ERROR})
+endif ()
 
 add_custom_target(restore-cache)
 
@@ -230,58 +223,6 @@ if (CACHE_RESTORE_FILE)
         )
     add_dependencies(restore-cache restore-cache-file)
 endif ()
-
-set(STAGE1_PACKAGE_CACHE_FILE ${CMAKE_BINARY_DIR}/timbre_stage1_cache.tgz)
-add_custom_target(stage1
-    COMMAND
-      ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build_stage.py
-        --conan-path ${Conan} $<$<NOT:$<STREQUAL:${CONAN_HOME},>>:"--conan-home ${CONAN_HOME}">
-        --binary-dir ${CMAKE_BINARY_DIR}
-        --cache-file ${STAGE1_PACKAGE_CACHE_FILE}
-        ${STAGE1_RECIPES}
-    BYPRODUCTS ${STAGE1_PACKAGE_CACHE_FILE}
-    DEPENDS restore-cache
-    COMMENT "building stage1 package cache"
-    )
-
-set(STAGE2_PACKAGE_CACHE_FILE ${CMAKE_BINARY_DIR}/timbre_stage2_cache.tgz)
-add_custom_target(stage2
-    COMMAND
-    ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build_stage.py
-    --conan-path ${Conan} $<$<NOT:$<STREQUAL:${CONAN_HOME},>>:"--conan-home ${CONAN_HOME}">
-    --binary-dir ${CMAKE_BINARY_DIR}
-    --cache-file ${STAGE2_PACKAGE_CACHE_FILE}
-    ${STAGE2_RECIPES}
-    BYPRODUCTS ${STAGE2_PACKAGE_CACHE_FILE}
-    DEPENDS restore-cache
-    COMMENT "building stage2 package cache"
-)
-
-set(STAGE3_PACKAGE_CACHE_FILE ${CMAKE_BINARY_DIR}/timbre_stage3_cache.tgz)
-add_custom_target(stage3
-    COMMAND
-    ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build_stage.py
-    --conan-path ${Conan} $<$<NOT:$<STREQUAL:${CONAN_HOME},>>:"--conan-home ${CONAN_HOME}">
-    --binary-dir ${CMAKE_BINARY_DIR}
-    --cache-file ${STAGE3_PACKAGE_CACHE_FILE}
-    ${STAGE3_RECIPES}
-    BYPRODUCTS ${STAGE3_PACKAGE_CACHE_FILE}
-    DEPENDS restore-cache
-    COMMENT "building stage3 package cache"
-)
-
-set(STAGE4_PACKAGE_CACHE_FILE ${CMAKE_BINARY_DIR}/timbre_stage4_cache.tgz)
-add_custom_target(stage4
-    COMMAND
-    ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build_stage.py
-    --conan-path ${Conan} $<$<NOT:$<STREQUAL:${CONAN_HOME},>>:"--conan-home ${CONAN_HOME}">
-    --binary-dir ${CMAKE_BINARY_DIR}
-    --cache-file ${STAGE4_PACKAGE_CACHE_FILE}
-    ${STAGE4_RECIPES}
-    BYPRODUCTS ${STAGE4_PACKAGE_CACHE_FILE}
-    DEPENDS restore-cache
-    COMMENT "building stage4 package cache"
-)
 
 add_custom_target(save-cache
     COMMAND ${CONAN} cache save '*:*' --no-source --file=${CACHE_SAVE_FILE}

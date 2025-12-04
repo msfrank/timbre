@@ -1,0 +1,65 @@
+name: build-package.yml
+on:
+  workflow_call:
+    inputs:
+      package_ref:
+        required: true
+        type: string
+      build_type:
+        required: true
+        type: string
+      build_runner:
+        required: true
+        type: string
+      conan_profile:
+        required: true
+        type: string
+      install_dependencies_script:
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+
+env:
+  ACTIONS_STEP_DEBUG: true
+
+jobs:
+
+  build-package:
+    name: Build package
+    runs-on: ${{ inputs.build_runner }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        if: ${{ inputs.install_dependencies_script != '' }}
+        run: ${{ inputs.install_dependencies_script }}
+
+      - name: Setup Conan
+        uses: conan-io/setup-conan@v1
+        id: setup-conan
+        with:
+          config_urls: 'conan2/'
+
+      - name: Configure conan client cert and credentials
+        run: |
+          echo "${{ secrets.conan-client-cert }}" > client.crt
+          echo "${{ secrets.conan-client-key}}" > client.key
+          echo "${{ secrets.conan-credentials-json}}" > ${{steps.setup-conan.outputs.conan-home}}/credentials.json
+
+      - name: Configure build system
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }}
+
+      - name: Build package
+        run: |
+          scripts/install_and_upload_package.py \
+            --conan-profile ${{ inputs.conan_profile }} \
+            --conan-remote conan.s10y.co \
+            --remote-auth \
+            ${{ inputs.package_ref }}

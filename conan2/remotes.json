@@ -1,0 +1,9 @@
+{
+  "remotes": [
+    {
+      "name": "conan.s10y.co",
+      "url": "https://conan.s10y.co",
+      "verify_ssl": true
+    }
+  ]
+}

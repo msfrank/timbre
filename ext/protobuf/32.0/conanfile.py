@@ -20,9 +20,6 @@ structured data.
 """
 
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "build_type": ["Release","Debug"], "compiler.cppstd": ["17"]}
-    default_options = {"shared": True, "build_type": "Release", "compiler.cppstd": "17"}
-    #keep_imports = True
 
     def requirements(self):
         self.requires("absl/20250127.1@timbre")

@@ -1,0 +1,87 @@
+name: build-platform.yml
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        required: true
+        type: string
+      build_runner:
+        required: true
+        type: string
+      conan_profile:
+        required: true
+        type: string
+      install_dependencies_script:
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+
+env:
+  ACTIONS_STEP_DEBUG: true
+
+jobs:
+
+  generate-build-order:
+    runs-on: ${{ inputs.build_runner }}
+
+    outputs:
+      build-order: ${{ steps.determine-build-order.outputs.build-order }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        if: ${{ inputs.install_dependencies_script != '' }}
+        run: ${{ inputs.install_dependencies_script }}
+
+      - name: Setup Conan
+        uses: conan-io/setup-conan@v1
+        id: setup-conan
+        with:
+          config_urls: 'conan2/'
+
+      - name: Configure conan client cert and credentials
+        run: |
+          echo "${{ secrets.CONAN_CLIENT_CERT }}" > client.crt
+          echo "${{ secrets.CONAN_CLIENT_KEY }}" > client.key
+          echo "${{ secrets.CONAN_CREDENTIALS_JSON }}" > ${{steps.setup-conan.outputs.conan-home}}/credentials.json
+
+      - name: Configure build system
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ inputs.build_type }}
+
+      - name: Export recipes
+        run: |
+          cmake --build build -t export-packages
+
+      - name: Determine build order
+        id: determine-build-order
+        run: |
+          BUILD_ORDER=$(scripts/determine_build_order.py \
+            --conan-profile ${{ inputs.conan_profile }} \
+            --conan-remote conan.s10y.co \
+            --remote-auth \
+            --scan-cache)
+          echo "build-order=\"$BUILD_ORDER\"" >> $GITHUB_OUTPUT
+
+  build-platform:
+    needs: generate-build-order
+    runs-on: ${{ inputs.build_runner }}
+    strategy:
+      max-parallel: 1
+      matrix:
+        build-order: ${{ needs.generate-build-order.outputs.build-order }}
+
+    steps:
+      - uses: ./.github/workflows/build-package.yml
+        with:
+          package_ref: ${{ matrix.build-order }}
+          build_runner: ${{ inputs.build_runner }}
+          build_type: ${{ inputs.build_type }}
+          conan_profile: ${{ inputs.conan_profile }}
+          install_dependencies_script: ${{ inputs.install_dependencies_script }}
