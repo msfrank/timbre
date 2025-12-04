@@ -83,10 +83,13 @@ jobs:
 
   build-platform:
     needs: generate-build-order
+    if: ${{ needs.generate-build-order.outputs.build-order != '[]' }}
+
     strategy:
       max-parallel: 1
       matrix:
         build-order: ${{ fromJSON(needs.generate-build-order.outputs.build-order) }}
+
     uses: ./.github/workflows/build-package.yml
     secrets: inherit
     with:
