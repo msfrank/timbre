@@ -51,7 +51,7 @@ jobs:
         uses: conan-io/setup-conan@v1
         id: setup-conan
         with:
-          config_urls: 'conan2/'
+          config_urls: 'https://github.com/msfrank/conan-config.git'
 
       - name: Configure conan client cert and credentials
         env:
@@ -98,3 +98,5 @@ jobs:
       build_type: ${{ inputs.build_type }}
       conan_profile: ${{ inputs.conan_profile }}
       install_dependencies_script: ${{ inputs.install_dependencies_script }}
+
+    name: "${{ matrix.platform.conan_profile }} platform"
