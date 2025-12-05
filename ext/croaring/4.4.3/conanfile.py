@@ -28,6 +28,7 @@ LLVM's clang, Visual Studio, Apple Xcode, Intel oneAPI).
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.cache_variables['BUILD_SHARED_LIBS'] = 'ON'
         tc.cache_variables['ENABLE_ROARING_TESTS'] = 'OFF'
         tc.cache_variables['ENABLE_ROARING_MICROBENCHMARKS'] = 'OFF'
         tc.cache_variables['ROARING_USE_CPM'] = 'OFF'
