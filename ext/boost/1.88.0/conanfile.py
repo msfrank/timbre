@@ -2,6 +2,7 @@ from os.path import join
 from platform import system
 
 from conan import ConanFile
+from conan.tools.apple import fix_apple_shared_install_name, is_apple_os
 from conan.tools.build import build_jobs
 from conan.tools.files import copy, get, unzip
 from conan.tools.env import Environment, VirtualRunEnv
@@ -21,8 +22,6 @@ Boost provides free peer-reviewed portable C++ source libraries.
 """
 
     settings = "os", "build_type", "compiler", "arch"
-    options = {"shared": [True, False], "with_icu": [True,False]}
-    default_options = {"shared": True, "with_icu": True}
 
     def source(self):
         get(self, BOOST_URL, filename=BOOST_DOWNLOAD_NAME, strip_root=True)
@@ -42,12 +41,13 @@ Boost provides free peer-reviewed portable C++ source libraries.
         b2_script = join(self.source_folder, "b2")
 
         configure_cmd = "%s --prefix=%s" % (bootstrap_script, self.build_folder)
-        if self.options.with_icu:
-            configure_cmd += " --with-icu"
         self.run(configure_cmd, cwd=self.source_folder, env=["boost_env"])
 
-        build_cmd = "%s --build-dir=%s" % (
-            b2_script, self.build_folder)
+        rpath = "@loader_path" if is_apple_os(self) else "\$ORIGIN"
+        linkflags = "-Wl,-rpath," + rpath + ",-headerpad_max_install_names"
+
+        build_cmd = "%s --build-dir=%s linkflags=%s" % (
+            b2_script, self.build_folder, linkflags)
         self.run(build_cmd, cwd=self.source_folder, env=["boost_env"])
 
     def package(self):
