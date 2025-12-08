@@ -43,18 +43,16 @@ Boost provides free peer-reviewed portable C++ source libraries.
         configure_cmd = "%s --prefix=%s" % (bootstrap_script, self.build_folder)
         self.run(configure_cmd, cwd=self.source_folder, env=["boost_env"])
 
-        rpath = "@loader_path" if is_apple_os(self) else "\$ORIGIN"
-        linkflags = "-Wl,-rpath," + rpath + ",-headerpad_max_install_names"
-
-        build_cmd = "%s --build-dir=%s linkflags=%s" % (
-            b2_script, self.build_folder, linkflags)
+        build_cmd = "%s --build-dir=%s" % (b2_script, self.build_folder)
         self.run(build_cmd, cwd=self.source_folder, env=["boost_env"])
 
     def package(self):
         b2_script = join(self.source_folder, "b2")
 
-        install_cmd = "%s --prefix=%s install" % (
-            b2_script, self.package_folder)
+        rpath = "@loader_path" if is_apple_os(self) else "\$ORIGIN"
+
+        install_cmd = "%s hardcode-dll-paths=true dll-path=\"%s\" --prefix=%s install" % (
+            b2_script, rpath, self.package_folder)
         self.run(install_cmd, cwd=self.source_folder, env=["boost_env"])
 
     def package_info(self):
