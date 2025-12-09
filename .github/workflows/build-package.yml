@@ -53,6 +53,9 @@ jobs:
         with:
           config_urls: 'https://github.com/msfrank/conan-config.git'
 
+      - name: Configure conan storage directory
+        run: mkdir -p /var/conan_packages
+
       - name: Configure conan client cert and credentials
         env:
           CONAN_CLIENT_CERT: ${{ secrets.CONAN_CLIENT_CERT }}
