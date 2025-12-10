@@ -8,9 +8,6 @@ on:
       build_runner:
         required: true
         type: string
-      conan_config_branch:
-        required: true
-        type: string
       conan_profile:
         required: true
         type: string
@@ -54,22 +51,26 @@ jobs:
         uses: conan-io/setup-conan@v1
         id: setup-conan
         with:
-          config_urls: "https://github.com/msfrank/conan-config/archive/refs/heads/${{ inputs.conan_config_branch }}.zip"
+          config_urls: "https://github.com/msfrank/conan-config.git"
 
-      - name: Configure conan storage directory
-        run: |
-          sudo mkdir -p /private/var/conan_packages
-          sudo chown runner /private/var/conan_packages
-
-      - name: Configure conan client cert and credentials
+      - name: Configure conan storage
+        id: configure-conan-storage
         env:
+          CONAN_HOME_BIN: ${{ steps.setup-conan.outputs.conan-home }}/bin
+        run: |
+          sudo $CONAN_HOME_BIN/make_conan_storage --owner $USER --output-path /tmp/conan_storage_path
+          echo "storage-path=$(cat /tmp/conan_storage_path)" >> "$GITHUB_OUTPUT"
+
+      - name: Configure conan global.conf
+        env:
+          CONAN_HOME_BIN: ${{ steps.setup-conan.outputs.conan-home }}/bin
           CONAN_CLIENT_CERT: ${{ secrets.CONAN_CLIENT_CERT }}
           CONAN_CLIENT_KEY: ${{ secrets.CONAN_CLIENT_KEY }}
           CONAN_CREDENTIALS_JSON: ${{ secrets.CONAN_CREDENTIALS_JSON }}
         run: |
-          echo "$CONAN_CLIENT_CERT" > /tmp/client.crt
-          echo "$CONAN_CLIENT_KEY" > /tmp/client.key
-          echo "$CONAN_CREDENTIALS_JSON" > ${{steps.setup-conan.outputs.conan-home}}/credentials.json
+          $CONAN_HOME_BIN/generate_global_conf \
+            --conan-home ${{ steps.setup-conan.outputs.conan-home }} \
+            ${{ steps.configure-conan-storage.outputs.storage-path }}
 
       - name: Configure build system
         run: |
@@ -88,8 +89,8 @@ jobs:
             --conan-remote conan.s10y.co \
             --remote-auth \
             --scan-cache \
-            --output-path output.json
-          echo "build-order=$(cat output.json)" >> "$GITHUB_OUTPUT"
+            --output-path /tmp/build_order_json
+          echo "build-order=$(cat /tmp/build_order_json)" >> "$GITHUB_OUTPUT"
 
   build-platform:
     needs: generate-build-order
@@ -106,7 +107,6 @@ jobs:
       package_ref: ${{ matrix.build-order }}
       build_runner: ${{ inputs.build_runner }}
       build_type: ${{ inputs.build_type }}
-      conan_config_branch: ${{ inputs.conan_config_branch }}
       conan_profile: ${{ inputs.conan_profile }}
       install_dependencies_script: ${{ inputs.install_dependencies_script }}
 
