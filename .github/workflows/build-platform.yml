@@ -58,7 +58,7 @@ jobs:
         env:
           CONAN_HOME_BIN: ${{ steps.setup-conan.outputs.conan-home }}/bin
         run: |
-          sudo $CONAN_HOME_BIN/make_conan_storage --owner $USER --output-path /tmp/conan_storage_path
+          sudo python3 $CONAN_HOME_BIN/make_conan_storage --owner $USER --output-path /tmp/conan_storage_path
           echo "storage-path=$(cat /tmp/conan_storage_path)" >> "$GITHUB_OUTPUT"
 
       - name: Configure conan global.conf
