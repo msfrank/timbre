@@ -15,18 +15,21 @@ jobs:
           { # ubuntu2404-arm64-debug
             build_type: "Debug",
             build_runner: "ubuntu-24.04-arm",
+            conan_config_branch: "ubuntu",
             conan_profile: "Ubuntu24.04-armv8-Debug",
             install_dependencies_script: "sudo apt-get install clang autoconf automake libtool"
           },
           { # ubuntu2404-x86_64-debug
             build_type: "Debug",
             build_runner: "ubuntu-24.04",
+            conan_config_branch: "ubuntu",
             conan_profile: "Ubuntu24.04-x86_64-Debug",
             install_dependencies_script: "sudo apt-get install clang autoconf automake libtool"
           },
           { # macos-arm64-debug
             build_type: "Debug",
             build_runner: "macos-15",
+            conan_config_branch: "macos",
             conan_profile: "MacOS-armv8-Debug",
             install_dependencies_script: "brew install autoconf automake libtool"
           }
@@ -36,6 +39,7 @@ jobs:
     with:
       build_type: ${{ matrix.platform.build_type }}
       build_runner: ${{ matrix.platform.build_runner }}
+      conan_config_branch: ${{ matrix.platform.conan_config_branch }}
       conan_profile: ${{ matrix.platform.conan_profile }}
       install_dependencies_script: ${{ matrix.platform.install_dependencies_script }}
 

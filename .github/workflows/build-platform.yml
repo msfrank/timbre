@@ -8,6 +8,9 @@ on:
       build_runner:
         required: true
         type: string
+      conan_config_branch:
+        required: true
+        type: string
       conan_profile:
         required: true
         type: string
@@ -51,12 +54,12 @@ jobs:
         uses: conan-io/setup-conan@v1
         id: setup-conan
         with:
-          config_urls: 'https://github.com/msfrank/conan-config.git'
+          config_urls: "https://github.com/msfrank/conan-config.git#${{ inputs.conan_config_branch }}"
 
       - name: Configure conan storage directory
         run: |
-          sudo mkdir -p /var/conan_packages
-          sudo chown runner /var/conan_packages
+          sudo mkdir -p /private/var/conan_packages
+          sudo chown runner /private/var/conan_packages
 
       - name: Configure conan client cert and credentials
         env:
@@ -101,6 +104,7 @@ jobs:
       package_ref: ${{ matrix.build-order }}
       build_runner: ${{ inputs.build_runner }}
       build_type: ${{ inputs.build_type }}
+      conan_config_branch: ${{ inputs.conan_config_branch }}
       conan_profile: ${{ inputs.conan_profile }}
       install_dependencies_script: ${{ inputs.install_dependencies_script }}
 
