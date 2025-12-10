@@ -53,7 +53,7 @@ jobs:
         with:
           config_urls: "https://github.com/msfrank/conan-config.git"
 
-      - name: Configure conan storage
+      - name: Configure Conan storage
         id: configure-conan-storage
         env:
           CONAN_HOME_BIN: ${{ steps.setup-conan.outputs.conan-home }}/bin
@@ -61,14 +61,14 @@ jobs:
           sudo python3 $CONAN_HOME_BIN/make_conan_storage --owner $USER --output-path /tmp/conan_storage_path
           echo "storage-path=$(cat /tmp/conan_storage_path)" >> "$GITHUB_OUTPUT"
 
-      - name: Configure conan global.conf
+      - name: Configure Conan global.conf
         env:
           CONAN_HOME_BIN: ${{ steps.setup-conan.outputs.conan-home }}/bin
           CONAN_CLIENT_CERT: ${{ secrets.CONAN_CLIENT_CERT }}
           CONAN_CLIENT_KEY: ${{ secrets.CONAN_CLIENT_KEY }}
           CONAN_CREDENTIALS_JSON: ${{ secrets.CONAN_CREDENTIALS_JSON }}
         run: |
-          $CONAN_HOME_BIN/generate_global_conf \
+          python3 $CONAN_HOME_BIN/generate_global_conf \
             --conan-home ${{ steps.setup-conan.outputs.conan-home }} \
             ${{ steps.configure-conan-storage.outputs.storage-path }}
 
