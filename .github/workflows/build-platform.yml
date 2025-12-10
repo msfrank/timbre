@@ -54,7 +54,7 @@ jobs:
         uses: conan-io/setup-conan@v1
         id: setup-conan
         with:
-          config_urls: "https://github.com/msfrank/conan-config.git#${{ inputs.conan_config_branch }}"
+          config_urls: "https://github.com/msfrank/conan-config/archive/refs/heads/${{ inputs.conan_config_branch }}.zip"
 
       - name: Configure conan storage directory
         run: |
