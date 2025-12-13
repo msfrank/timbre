@@ -12,9 +12,9 @@ parser.add_argument('--conan-path', default='conan')
 parser.add_argument('--conan-home', default=None)
 parser.add_argument('--conan-profile', default=None)
 parser.add_argument('--conan-build-profile', default=None)
-parser.add_argument('--conan-remote', default=None)
+#parser.add_argument('--conan-remote', default=None)
 parser.add_argument('--output-path', default=None)
-parser.add_argument('--remote-auth', action='store_true')
+#parser.add_argument('--remote-auth', action='store_true')
 parser.add_argument('--scan-cache', action='store_true')
 parser.add_argument('--debug', action='store_true')
 parser.add_argument('requires', nargs='*')
@@ -42,19 +42,19 @@ def run_conan(*cmd_args):
         sys.exit(1)
     return result
 
-# if remote auth was specified then perform login
-
-if args.remote_auth and args.conan_remote:
-    run_conan('remote', 'auth', '-cc', 'core:non_interactive=True', args.conan_remote)
+## if remote auth was specified then perform login
+#
+#if args.remote_auth and args.conan_remote:
+#    run_conan('remote', 'auth', '-cc', 'core:non_interactive=True', args.conan_remote)
 
 # construct the build order
 
 graph_args = ['graph', 'build-order', '--build=missing', '-f', 'json']
 
-if args.conan_remote:
-    graph_args.append(f"--remote={args.conan_remote}")
-else:
-    graph_args.append('--no-remote')
+#if args.conan_remote:
+#    graph_args.append(f"--remote={args.conan_remote}")
+#else:
+#    graph_args.append('--no-remote')
 
 for requires in args.requires:
     graph_args.append(f"--requires={requires}")

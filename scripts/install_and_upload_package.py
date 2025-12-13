@@ -14,7 +14,7 @@ parser.add_argument('--conan-profile', default=None)
 parser.add_argument('--conan-build-profile', default=None)
 parser.add_argument('--conan-remote', default=None)
 parser.add_argument('--build', action='append', default=[])
-parser.add_argument('--remote-auth', action='store_true')
+#parser.add_argument('--remote-auth', action='store_true')
 parser.add_argument('--force-upload', action='store_true')
 parser.add_argument('--debug', action='store_true')
 parser.add_argument('package_ref')
@@ -42,17 +42,17 @@ def run_conan(*cmd_args):
         sys.exit(1)
     return result
 
-# if remote auth was specified then perform login
-
-if args.remote_auth and args.conan_remote:
-    run_conan('remote', 'auth', '-cc', 'core:non_interactive=True', args.conan_remote)
+## if remote auth was specified then perform login
+#
+#if args.remote_auth and args.conan_remote:
+#    run_conan('remote', 'auth', '-cc', 'core:non_interactive=True', args.conan_remote)
 
 # install package
 
 install_args = ['install', '-f', 'json', f"--requires={args.package_ref}", f"--build={args.package_ref}"]
 
-if args.conan_remote:
-    install_args.append(f"--remote={args.conan_remote}")
+#if args.conan_remote:
+#    install_args.append(f"--remote={args.conan_remote}")
 
 for build in args.build:
     install_args.append(f"--build={build}")

@@ -82,6 +82,8 @@ jobs:
 
       - name: Build package
         run: |
+          conan remote enable develop
+          conan remote enable build
           scripts/install_and_upload_package.py \
             --debug \
             --conan-profile ${{ inputs.conan_profile }} \
