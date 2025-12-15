@@ -90,13 +90,13 @@ jobs:
             --debug \
             --conan-profile ${{ inputs.conan_profile }} \
             --scan-cache \
-            --package-refs-path /tmp/package-refs.json
+            --package-refs-path /tmp/package-refs.json \
             --build-order-path /tmp/build-order.json
           echo "package-refs=$(cat /tmp/package-refs.json)" >> "$GITHUB_OUTPUT"
           echo "build-order=$(cat /tmp/build-order.json)" >> "$GITHUB_OUTPUT"
 
       - name: Build packages
-        if: ${{ needs.determine-changes.outputs.build-order != '[]' }}
+        if: ${{ steps.determine-changes.outputs.build-order != '[]' }}
         uses: ./.github/workflows/build-changes.yml
         with:
           build_order: ${{ steps.determine-changes.outputs.build-order }}
