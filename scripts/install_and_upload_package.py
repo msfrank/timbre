@@ -7,7 +7,9 @@ from argparse import ArgumentParser
 from json import loads
 from subprocess import run
 
-parser = ArgumentParser(prog="install_and_upload_package", description="install package from cache and upload to conan")
+parser = ArgumentParser(
+    prog="install_and_upload_package",
+    description="install package from cache and upload to conan remote")
 parser.add_argument('--conan-path', default='conan')
 parser.add_argument('--conan-home', default=None)
 parser.add_argument('--conan-profile', default=None)

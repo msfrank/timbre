@@ -87,6 +87,5 @@ jobs:
           scripts/install_and_upload_package.py \
             --debug \
             --conan-profile ${{ inputs.conan_profile }} \
-            --conan-remote conan.s10y.co \
-            --remote-auth \
+            --conan-remote build \
             ${{ inputs.package_ref }}

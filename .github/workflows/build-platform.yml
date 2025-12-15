@@ -32,12 +32,13 @@ env:
 
 jobs:
 
-  generate-build-order:
+  build-platform:
     name: Generate the build order matrix
     runs-on: ${{ inputs.build_runner }}
 
     outputs:
-      build-order: ${{ steps.determine-build-order.outputs.build-order }}
+      package-refs: ${{ steps.determine-changes.outputs.package-refs }}
+      build-order: ${{ steps.determine-changes.outputs.build-order }}
 
     steps:
       - name: Checkout repository
@@ -80,34 +81,36 @@ jobs:
         run: |
           cmake --build build -t export-packages
 
-      - name: Determine build order
-        id: determine-build-order
+      - name: Determine changes
+        id: determine-changes
         run: |
           conan remote enable develop
           conan remote enable build
-          scripts/determine_build_order.py \
+          scripts/determine_changes.py \
             --debug \
             --conan-profile ${{ inputs.conan_profile }} \
             --scan-cache \
-            --output-path /tmp/build_order_json
-          echo "build-order=$(cat /tmp/build_order_json)" >> "$GITHUB_OUTPUT"
+            --package-refs-path /tmp/package-refs.json
+            --build-order-path /tmp/build-order.json
+          echo "package-refs=$(cat /tmp/package-refs.json)" >> "$GITHUB_OUTPUT"
+          echo "build-order=$(cat /tmp/build-order.json)" >> "$GITHUB_OUTPUT"
 
-  build-platform:
-    needs: generate-build-order
-    if: ${{ needs.generate-build-order.outputs.build-order != '[]' }}
+      - name: Build packages
+        if: ${{ needs.determine-changes.outputs.build-order != '[]' }}
+        uses: ./.github/workflows/build-changes.yml
+        with:
+          build_order: ${{ steps.determine-changes.outputs.build-order }}
+          build_runner: ${{ inputs.build_runner }}
+          build_type: ${{ inputs.build_type }}
+          conan_profile: ${{ inputs.conan_profile }}
+          install_dependencies_script: ${{ inputs.install_dependencies_script }}
 
-    strategy:
-      max-parallel: 1
-      matrix:
-        build-order: ${{ fromJSON(needs.generate-build-order.outputs.build-order) }}
-
-    uses: ./.github/workflows/build-package.yml
-    secrets: inherit
-    with:
-      package_ref: ${{ matrix.build-order }}
-      build_runner: ${{ inputs.build_runner }}
-      build_type: ${{ inputs.build_type }}
-      conan_profile: ${{ inputs.conan_profile }}
-      install_dependencies_script: ${{ inputs.install_dependencies_script }}
-
-    name: "${{ matrix.platform.conan_profile }} platform"
+      - name: Promote packages to integ
+        run: |
+          conan remote enable integ
+          conan remote enable build
+          echo "${{ steps.determine-changes.outputs.package-refs }}" >> /tmp/package-refs.json
+          scripts/promote_packages.py \
+            --debug \
+            --package-refs-path /tmp/package-refs.json \
+            build integ
