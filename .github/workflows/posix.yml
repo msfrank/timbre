@@ -11,26 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        platform: [
-          { # ubuntu2404-arm64-debug
-            build_type: "Debug",
-            build_runner: "ubuntu-24.04-arm",
-            conan_profile: "Ubuntu24.04-armv8-Debug",
-            install_dependencies_script: "sudo apt-get install clang autoconf automake libtool"
-          },
-          { # ubuntu2404-x86_64-debug
-            build_type: "Debug",
-            build_runner: "ubuntu-24.04",
-            conan_profile: "Ubuntu24.04-x86_64-Debug",
-            install_dependencies_script: "sudo apt-get install clang autoconf automake libtool"
-          },
-          { # macos-arm64-debug
-            build_type: "Debug",
-            build_runner: "macos-15",
-            conan_profile: "MacOS-armv8-Debug",
-            install_dependencies_script: "brew install autoconf automake libtool"
-          }
-        ]
+        platform: ${{ fromJSON(vars.POSIX_PLATFORMS) }}
 
     secrets: inherit
     with:
