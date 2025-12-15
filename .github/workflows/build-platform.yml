@@ -109,10 +109,6 @@ jobs:
         run: |
           conan remote enable integ
           conan remote enable build
-          echo "${{ steps.determine-changes.outputs.package-refs }}" >> /tmp/package-refs.json
-          echo "---"
-          cat /tmp/package-refs.json
-          echo "---"
           scripts/promote_packages.py \
             --debug \
             --package-refs-path /tmp/package-refs.json \
