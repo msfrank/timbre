@@ -17,6 +17,7 @@ parser.add_argument('--conan-build-profile', default=None)
 parser.add_argument('-p', '--package-ref', action='append', default=[], dest='package_refs')
 parser.add_argument('--package-refs-path', default=None)
 parser.add_argument('--force-upload', action='store_true')
+parser.add_argument('--clean', action='store_true')
 parser.add_argument('--debug', action='store_true')
 parser.add_argument('source_remote')
 parser.add_argument('target_remote')
@@ -100,3 +101,9 @@ for package_ref in promotion_refs:
     if args.force_upload:
         upload_args.append('--force')
     upload_result = run_conan(*upload_args)
+
+    if args.clean:
+        package_id,sep,rev = package_ref.partition('#')
+        clean_ref = f"{package_id}#!latest"
+        clean_args = ['remove', '-cc', 'core:non_interactive=True', f"--remote={args.target_remote}", '-f', 'json', clean_ref]
+        clean_result = run_conan(*clean_args)

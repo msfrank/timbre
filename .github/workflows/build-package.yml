@@ -87,5 +87,5 @@ jobs:
           scripts/install_and_upload_package.py \
             --debug \
             --conan-profile ${{ inputs.conan_profile }} \
-            --conan-remote build \
-            ${{ inputs.package_ref }}
+            --clean \
+            ${{ inputs.package_ref }} build

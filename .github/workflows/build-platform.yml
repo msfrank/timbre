@@ -112,4 +112,5 @@ jobs:
           scripts/promote_packages.py \
             --debug \
             --package-refs-path /tmp/package-refs.json \
+            --clean \
             build integ
