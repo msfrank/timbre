@@ -48,10 +48,10 @@ is widely used by Internet servers, including the majority of HTTPS websites.
         system_name = system()
         machine_type = machine()
         if system_name == 'Darwin':
-            configure_cmd = "%s --debug --prefix=%s darwin64-%s-cc threads shared zlib-dynamic no-tests no-docs" % (
+            configure_cmd = "%s --debug --prefix=%s --libdir=lib darwin64-%s-cc threads shared zlib-dynamic no-tests no-docs" % (
                 configure_script, install_prefix, machine_type)
         elif system_name == 'Linux':
-            configure_cmd = "%s --debug --prefix=%s threads shared zlib-dynamic no-tests no-docs" % (
+            configure_cmd = "%s --debug --prefix=%s --libdir=lib threads shared zlib-dynamic no-tests no-docs" % (
                 configure_script, install_prefix)
         else:
             raise Exception("don't know how to build for platform: %s" % system_name)
