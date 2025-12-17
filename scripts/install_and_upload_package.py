@@ -70,5 +70,5 @@ for revision in upload_revisions:
     if args.clean:
         package_id,sep,rev = revision.partition('#')
         clean_ref = f"{package_id}#!latest"
-        clean_args = ['remove', '-cc', 'core:non_interactive=True', f"--remote={args.remote}", '-f', 'json', clean_ref]
+        clean_args = ['remove', '-cc', 'core:non_interactive=True', f"--remote={args.remote}", '-c', '-f', 'json', clean_ref]
         clean_result = run_conan(*clean_args)
