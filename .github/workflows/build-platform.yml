@@ -153,7 +153,8 @@ jobs:
         run: |
           conan remote enable integ
           conan remote enable build
-          echo "${{ needs.generate-build-order-matrix.outputs.package-refs }}" > /tmp/package-refs.json
+          conan remote auth integ
+          echo '${{ needs.generate-build-order-matrix.outputs.package-refs }}' > /tmp/package-refs.json
           scripts/promote_packages.py \
             --debug \
             --package-refs-path /tmp/package-refs.json \
