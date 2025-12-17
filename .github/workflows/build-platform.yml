@@ -92,8 +92,8 @@ jobs:
             --scan-cache \
             --package-refs-path /tmp/package-refs.json \
             --build-order-path /tmp/build-order.json
-          echo "package-refs=$(cat /tmp/package-refs.json)" >> "$GITHUB_OUTPUT"
-          echo "build-order=$(cat /tmp/build-order.json)" >> "$GITHUB_OUTPUT"
+          echo "package-refs=$(cat /tmp/package-refs.json)" | tee -a "$GITHUB_OUTPUT"
+          echo "build-order=$(cat /tmp/build-order.json)" | tee -a "$GITHUB_OUTPUT"
 
   build-platform:
     name: Build all changed packages for the platform

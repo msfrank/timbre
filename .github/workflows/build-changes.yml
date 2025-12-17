@@ -38,6 +38,7 @@ jobs:
   build-changes:
     name: Build all out-of-date packages
 
+    if: ${{ inputs.build-order != '[]' }}
     strategy:
       max-parallel: 1
       matrix:
