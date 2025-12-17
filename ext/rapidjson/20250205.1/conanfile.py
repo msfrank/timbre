@@ -21,6 +21,10 @@ RapidJSON is a JSON parser and generator for C++.
     no_copy_source = True
     package_type = "header-library"
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     def source(self):
         get(self, RAPIDJSON_URL, filename=RAPIDJSON_DOWNLOAD_NAME, strip_root=True)
  

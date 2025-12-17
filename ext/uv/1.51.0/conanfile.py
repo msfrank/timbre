@@ -21,6 +21,10 @@ class Uv(ConanFile):
 libuv is a multi-platform support library with a focus on asynchronous I/O.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "compiler", "build_type", "arch"
 
     def source(self):

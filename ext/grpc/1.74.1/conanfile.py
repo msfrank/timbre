@@ -20,6 +20,10 @@ gRPC is a modern open source high performance Remote Procedure Call (RPC) framew
 in any environment.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "build_type", "compiler", "arch"
 
     def requirements(self):

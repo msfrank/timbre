@@ -21,9 +21,11 @@ Qt 6 lets you develop applications with intuitive user interfaces for multiple d
 and platforms, faster than ever before.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "build_type", "compiler", "arch"
-    options = {"shared": [True, False]}
-    default_options = {"shared": True}
 
     def requirements(self):
         self.requires("icu/74.1@timbre")

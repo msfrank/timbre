@@ -22,6 +22,10 @@ class Sqlite(ConanFile):
 SQLite is a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "compiler", "build_type", "arch"
 
     def source(self):

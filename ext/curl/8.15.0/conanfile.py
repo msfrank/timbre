@@ -17,6 +17,10 @@ class Curl(ConanFile):
 Command line tool and library for transferring data with URLs (since 1998).
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "compiler", "build_type", "arch"
 
     def requirements(self):

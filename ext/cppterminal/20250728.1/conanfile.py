@@ -18,6 +18,10 @@ CPP-Terminal is a small and dependency-free C++ library for writing platform ind
 terminal-based applications.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "build_type", "compiler", "arch"
 
     def source(self):

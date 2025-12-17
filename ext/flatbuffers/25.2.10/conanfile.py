@@ -19,6 +19,10 @@ JavaScript, Lobster, Lua, TypeScript, PHP, Python, Rust and Swift. It was origin
 Google for game development and other performance-critical applications.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "compiler", "build_type", "arch"
 
     def source(self):

@@ -17,9 +17,11 @@ class Fmt(ConanFile):
 {fmt} is an open-source formatting library providing a fast and safe alternative to C stdio and C++ iostreams.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "build_type", "compiler", "arch"
-    options = {"shared": [True, False]}
-    default_options = {"shared": True}
 
     def source(self):
         get(self, FMT_URL, filename=FMT_DOWNLOAD_NAME, strip_root=True)

@@ -21,6 +21,10 @@ Berkeley-style licensed command line editor library provides generic line editin
 and tokenization functions, similar to those found in GNU Readline.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "compiler", "build_type", "arch"
 
     def source(self):

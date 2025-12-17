@@ -19,6 +19,10 @@ Enterprise-grade peer-to-peer networking library with advanced NAT traversal, en
 encryption, and publish-subscribe messaging.
     """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "build_type", "compiler", "arch"
 
     def source(self):

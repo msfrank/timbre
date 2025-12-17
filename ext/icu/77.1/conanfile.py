@@ -21,6 +21,10 @@ support for software applications. ICU is widely portable and gives applications
 on all platforms and between C/C++ and Java software.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "compiler", "build_type", "arch"
 
     def source(self):

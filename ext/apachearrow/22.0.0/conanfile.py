@@ -19,6 +19,10 @@ Apache Arrow is a software development platform for building high performance ap
 process and transport large data sets.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "compiler", "build_type", "arch"
 
     def requirements(self):

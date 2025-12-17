@@ -18,6 +18,10 @@ HDR Histogram is designed for recoding histograms of value measurements
 in latency and performance sensitive applications. 
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "compiler", "build_type", "arch"
 
     def source(self):

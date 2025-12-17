@@ -18,6 +18,10 @@ Portable Roaring bitmaps in C (and C++) with full support for your favorite comp
 LLVM's clang, Visual Studio, Apple Xcode, Intel oneAPI).
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "build_type", "compiler", "arch"
 
     def source(self):

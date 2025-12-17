@@ -18,9 +18,11 @@ class Cares(ConanFile):
 c-ares is a C library for asynchronous DNS requests (including name resolves).
     """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "build_type", "compiler", "arch"
-    options = {"shared": [True, False], "build_type": ["Release","Debug"], "compiler.cppstd": ["17"]}
-    default_options = {"shared": True, "build_type": "Release", "compiler.cppstd": "17"}
 
     def source(self):
         get(self, CARES_URL, filename=CARES_DOWNLOAD_NAME, strip_root=True)

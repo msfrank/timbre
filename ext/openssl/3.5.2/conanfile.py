@@ -23,9 +23,11 @@ computer networks against eavesdropping, and identify the party at the other end
 is widely used by Internet servers, including the majority of HTTPS websites. 
     """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "build_type", "compiler", "arch"
-    options = {"shared": [True, False], "compiler.cppstd": ["11"]}
-    default_options = {"shared": True, "compiler.cppstd": "11"}
 
     def source(self):
         get(self, OPENSSL_URL, filename=OPENSSL_DOWNLOAD_NAME, strip_root=True)

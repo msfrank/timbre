@@ -19,9 +19,11 @@ Abseil is an open source collection of C++ libraries drawn from the most fundame
 pieces of Google’s internal codebase.
     """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "compiler.cppstd": ["17"]}
-    default_options = {"shared": True, "compiler.cppstd": "17"}
 
     def source(self):
         get(self, ABSL_URL, filename=ABSL_DOWNLOAD_NAME, strip_root=True)

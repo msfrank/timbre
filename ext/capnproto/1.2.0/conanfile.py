@@ -18,6 +18,10 @@ class Nng(ConanFile):
 Cap’n Proto is an insanely fast data interchange format and capability-based RPC system.
     """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "build_type", "compiler", "arch"
 
     def source(self):

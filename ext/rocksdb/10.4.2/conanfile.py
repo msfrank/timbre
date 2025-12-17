@@ -17,9 +17,11 @@ class Rocksdb(ConanFile):
 A Persistent Key-Value Store for Flash and RAM Storage.
 """
 
+    # enforce full mode when resolving dependencies
+    package_id_non_embed_mode = "full_mode"
+    package_id_unknown_mode = "full_mode"
+
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
-    default_options = {"shared": True}
 
     def source(self):
         get(self, ROCKSDB_URL, filename=ROCKSDB_DOWNLOAD_NAME, strip_root=True)
