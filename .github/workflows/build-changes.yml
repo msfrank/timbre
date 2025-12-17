@@ -35,8 +35,16 @@ env:
 
 jobs:
 
+  checkout:
+    name: Checkout repository
+    runs-on: ${{ inputs.build_runner }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
   build-changes:
     name: Build all out-of-date packages
+    needs: checkout
 
     strategy:
       max-parallel: 1
