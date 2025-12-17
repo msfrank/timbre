@@ -101,6 +101,7 @@ jobs:
 
     if: ${{ needs.generate-build-order-matrix.outputs.build-order != '[]' }}
     uses: ./.github/workflows/build-changes.yml
+    secrets: inherit
     with:
       build_order: ${{ needs.generate-build-order-matrix.outputs.build-order }}
       build_runner: ${{ inputs.build_runner }}
