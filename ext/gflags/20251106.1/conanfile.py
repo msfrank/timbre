@@ -31,6 +31,7 @@ The gflags package contains a C++ library that implements commandline flags proc
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.variables['BUILD_SHARED_LIBS'] = 'ON'
         tc.generate()
         deps = CMakeDeps(self)
         deps.generate()

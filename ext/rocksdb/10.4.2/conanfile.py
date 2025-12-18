@@ -31,6 +31,7 @@ A Persistent Key-Value Store for Flash and RAM Storage.
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.variables['BUILD_SHARED_LIBS'] = 'ON'
         tc.cache_variables['WITH_GFLAGS'] = 'OFF'
         tc.cache_variables['WITH_ZLIB'] = 'ON'
         tc.cache_variables['WITH_TESTS'] = 'OFF'

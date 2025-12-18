@@ -31,6 +31,7 @@ A library to benchmark code snippets, similar to unit tests.
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.variables['BUILD_SHARED_LIBS'] = 'ON'
         tc.cache_variables['BENCHMARK_ENABLE_TESTING'] = 'OFF'
         tc.generate()
         deps = CMakeDeps(self)

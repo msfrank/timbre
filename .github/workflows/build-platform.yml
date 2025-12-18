@@ -116,6 +116,7 @@ jobs:
       - build-platform
     runs-on: ${{ inputs.build_runner }}
 
+    if: ${{ !failure() }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

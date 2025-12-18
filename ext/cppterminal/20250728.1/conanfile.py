@@ -32,6 +32,7 @@ terminal-based applications.
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.variables['BUILD_SHARED_LIBS'] = 'ON'
         tc.cache_variables['CPPTERMINAL_ENABLE_INSTALL'] = 'ON'
         tc.cache_variables['CPPTERMINAL_BUILD_EXAMPLES'] = 'OFF'
         tc.cache_variables['CPPTERMINAL_ENABLE_TESTING'] = 'OFF'

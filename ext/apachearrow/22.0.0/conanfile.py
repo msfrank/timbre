@@ -47,6 +47,7 @@ process and transport large data sets.
 
         tc.extra_cxxflags.append('-Wno-deprecated-declarations')
 
+        tc.variables['BUILD_SHARED_LIBS'] = 'ON'
         tc.variables['CMAKE_CXX_STANDARD'] = '17'                   # force c++ 17
         tc.variables['CMAKE_INSTALL_LIBDIR'] = 'lib'                # force libdir to be 'lib' even on 64bit
         tc.variables['CMAKE_POSITION_INDEPENDENT_CODE'] = 'ON'      # force PIC

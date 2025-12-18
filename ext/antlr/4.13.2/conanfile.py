@@ -36,6 +36,7 @@ tools, and frameworks. From a grammar, ANTLR generates a parser that can build a
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.variables['BUILD_SHARED_LIBS'] = 'ON'
         tc.variables['CMAKE_MACOSX_RPATH'] = 'ON'
         tc.cache_variables['WITH_DEMO'] = 'OFF'
         tc.cache_variables['ANTLR_BUILD_CPP_TESTS'] = 'OFF'
