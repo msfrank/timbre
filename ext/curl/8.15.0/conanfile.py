@@ -24,7 +24,7 @@ Command line tool and library for transferring data with URLs (since 1998).
     settings = "os", "compiler", "build_type", "arch"
 
     def requirements(self):
-        self.requires("cares/1.23.0@timbre")
+        self.requires("cares/1.34.6@timbre")
         self.requires("openssl/3.5.2@timbre")
 
     def source(self):
@@ -47,24 +47,29 @@ Command line tool and library for transferring data with URLs (since 1998).
 
         # don't build the curl command or tests
         tc.cache_variables['BUILD_CURL_EXE'] = 'OFF'
+        tc.cache_variables['BUILD_EXAMPLES'] = 'OFF'
+        tc.cache_variables['BUILD_LIBCURL_DOCS'] = 'OFF'
+        tc.cache_variables['BUILD_MISC_DOCS'] = 'OFF'
         tc.cache_variables['BUILD_TESTING'] = 'OFF'
 
         # disable some extras we don't need
+        tc.cache_variables['CURL_BROTLI'] = 'OFF'
         tc.cache_variables['CURL_USE_PKGCONFIG'] = 'OFF'
         tc.cache_variables['CURL_USE_LIBIDN2'] = 'OFF'
         tc.cache_variables['CURL_USE_LIBPSL'] = 'OFF'
+        tc.cache_variables['CURL_USE_LIBSSH'] = 'OFF'
+        tc.cache_variables['CURL_USE_LIBSSH2'] = 'OFF'
+        tc.cache_variables['USE_LIBIDN2'] = 'OFF'
         tc.cache_variables['USE_NGHTTP2'] = 'OFF'
 
         # curl uses the default cmake FindOpenSSL script, which takes OPENSSL_ROOT_DIR as a hint
         # to locate the openssl headers and libraries.
         tc.cache_variables['CURL_ENABLE_SSL'] = 'ON'
         tc.cache_variables['CURL_USE_OPENSSL'] = 'ON'
-        tc.cache_variables['OPENSSL_ROOT_DIR'] = self.dependencies['openssl'].package_folder
+        tc.cache_variables['OpenSSL_DIR'] = join(self.dependencies['openssl'].package_folder, 'lib','cmake','OpenSSL')
 
         # enable c-ares
         tc.cache_variables['ENABLE_ARES'] = 'ON'
-        #tc.cache_variables['CARES_INCLUDE_DIR'] = self.dependencies['cares'].cpp_info.includedirs[0]
-        #tc.cache_variables['CARES_LIBRARY'] = self.dependencies['cares'].cpp_info.libs[0]
 
         tc.generate()
         deps = CMakeDeps(self)

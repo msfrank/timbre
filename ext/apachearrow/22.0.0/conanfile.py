@@ -28,9 +28,7 @@ process and transport large data sets.
     def requirements(self):
         self.requires("absl/20250127.1@timbre")
         self.requires("boost/1.88.0@timbre")
-        self.requires("cares/1.23.0@timbre")
         self.requires("gflags/20251106.1@timbre")
-        self.requires("openssl/3.5.2@timbre")
         self.requires("rapidjson/20250205.1@timbre")
         self.requires("re2/20210901.1@timbre")
 
@@ -54,7 +52,6 @@ process and transport large data sets.
 
         # find dependencies
         tc.cache_variables['absl_ROOT'] = self.dependencies["absl"].package_folder
-        tc.cache_variables['OPENSSL_ROOT_DIR'] = self.dependencies["openssl"].package_folder
         tc.cache_variables['RapidJSON_ROOT'] = self.dependencies["rapidjson"].package_folder
 
         # component selection
