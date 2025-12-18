@@ -33,6 +33,9 @@ pieces of Google’s internal codebase.
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.cache_variables['BUILD_SHARED_LIBS'] = 'ON'
+        tc.cache_variables['ABSL_BUILD_MONOLITHIC_SHARED_LIBS'] = 'ON'
+        tc.cache_variables['CMAKE_INSTALL_RPATH_USE_LINK_PATH'] = 'ON'
         tc.cache_variables['CMAKE_CXX_STANDARD'] = '17'
         tc.cache_variables['CMAKE_INSTALL_RPATH_USE_LINK_PATH'] = 'ON'
         tc.cache_variables['CMAKE_MACOSX_RPATH'] = 'ON'
