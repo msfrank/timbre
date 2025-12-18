@@ -64,6 +64,7 @@ in any environment.
         tc.cache_variables['gRPC_BUILD_TESTS'] = 'OFF'
 
         # build gRPC with static dependencies
+        tc.cache_variables['gRPC_DOWNLOAD_ARCHIVES'] = 'OFF'
         tc.cache_variables['gRPC_ABSL_PROVIDER'] = 'package'
         tc.cache_variables['gRPC_BENCHMARK_PROVIDER'] = 'package'
         tc.cache_variables['gRPC_CARES_PROVIDER'] = 'package'

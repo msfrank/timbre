@@ -30,9 +30,7 @@ process and transport large data sets.
         self.requires("boost/1.88.0@timbre")
         self.requires("cares/1.23.0@timbre")
         self.requires("gflags/20251106.1@timbre")
-        self.requires("grpc/1.74.1@timbre")
         self.requires("openssl/3.5.2@timbre")
-        self.requires("protobuf/32.0@timbre")
         self.requires("rapidjson/20250205.1@timbre")
         self.requires("re2/20210901.1@timbre")
 
@@ -47,22 +45,16 @@ process and transport large data sets.
 
         tc.extra_cxxflags.append('-Wno-deprecated-declarations')
 
-        tc.variables['BUILD_SHARED_LIBS'] = 'ON'
         tc.variables['CMAKE_CXX_STANDARD'] = '17'                   # force c++ 17
         tc.variables['CMAKE_INSTALL_LIBDIR'] = 'lib'                # force libdir to be 'lib' even on 64bit
         tc.variables['CMAKE_POSITION_INDEPENDENT_CODE'] = 'ON'      # force PIC
         tc.variables["CMAKE_FIND_PACKAGE_PREFER_CONFIG"] = 'ON'
 
         tc.cache_variables['CMAKE_INSTALL_RPATH_USE_LINK_PATH'] = 'ON'  # force append link paths to rpath
-        #tc.cache_variables['ARROW_INSTALL_NAME_RPATH'] = 'ON'
-        #tc.cache_variables['ARROW_RPATH_ORIGIN'] = 'ON'
 
         # find dependencies
         tc.cache_variables['absl_ROOT'] = self.dependencies["absl"].package_folder
-        tc.cache_variables['c-ares_ROOT'] = self.dependencies["cares"].package_folder
-        tc.cache_variables['gRPCAlt_ROOT'] = self.dependencies["grpc"].package_folder
         tc.cache_variables['OPENSSL_ROOT_DIR'] = self.dependencies["openssl"].package_folder
-        tc.cache_variables['Protobuf_ROOT'] = self.dependencies["protobuf"].package_folder
         tc.cache_variables['RapidJSON_ROOT'] = self.dependencies["rapidjson"].package_folder
 
         # component selection
@@ -73,7 +65,7 @@ process and transport large data sets.
         tc.cache_variables["ARROW_COMPUTE"] = 'ON'
         tc.cache_variables["ARROW_DATASET"] = 'ON'
         tc.cache_variables["ARROW_FILESYSTEM"] = 'ON'
-        tc.cache_variables["ARROW_FLIGHT"] = 'ON'
+        tc.cache_variables["ARROW_FLIGHT"] = 'OFF'
         tc.cache_variables["ARROW_IPC"] = 'OFF'
         tc.cache_variables["ARROW_JEMALLOC"] = 'OFF'
         tc.cache_variables["ARROW_CSV"] = 'ON'
@@ -82,7 +74,6 @@ process and transport large data sets.
         # other options
         tc.cache_variables["ARROW_DEPENDENCY_SOURCE"] = 'SYSTEM'
         tc.cache_variables["ARROW_BOOST_USE_SHARED"] = 'ON'
-        tc.cache_variables["ARROW_PROTOBUF_USE_SHARED"] = 'ON'
         tc.cache_variables["ARROW_WITH_ZLIB"] = 'OFF'
         tc.cache_variables["ARROW_WITH_UTF8PROC"] = 'OFF'
         tc.cache_variables["ARROW_SIMD_LEVEL"] = 'NONE'
@@ -109,4 +100,3 @@ process and transport large data sets.
         self.cpp_info.set_property("cmake_find_mode", "none")
         self.cpp_info.builddirs.append(join("lib", "cmake", "Arrow"))
         self.cpp_info.builddirs.append(join("lib", "cmake", "ArrowDataset"))
-        self.cpp_info.builddirs.append(join("lib", "cmake", "ArrowFlight"))
