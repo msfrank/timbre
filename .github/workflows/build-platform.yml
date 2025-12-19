@@ -86,7 +86,7 @@ jobs:
         run: |
           conan remote enable develop
           conan remote enable build
-          scripts/determine_changes.py \
+          tools/determine_changes \
             --debug \
             --conan-profile ${{ inputs.conan_profile }} \
             --scan-cache \
@@ -156,7 +156,7 @@ jobs:
           conan remote enable build
           conan remote auth --force integ
           echo '${{ needs.generate-build-order-matrix.outputs.package-refs }}' > /tmp/package-refs.json
-          scripts/promote_packages.py \
+          tools/promote_packages \
             --debug \
             --package-refs-path /tmp/package-refs.json \
             --clean \
