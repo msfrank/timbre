@@ -81,11 +81,13 @@ jobs:
           cmake --build build -t export-packages
 
       - name: Build package
+        env:
+          CONAN_HOME_BIN: ${{ steps.setup-conan.outputs.conan-home }}/bin
         run: |
           conan remote enable develop
           conan remote enable build
           conan remote auth --force build
-          tools/install_and_upload_package \
+          $CONAN_HOME_BIN/install_and_upload_package \
             --debug \
             --conan-profile ${{ inputs.conan_profile }} \
             --clean \

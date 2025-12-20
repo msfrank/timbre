@@ -83,10 +83,12 @@ jobs:
 
       - name: Determine changes
         id: determine-changes
+        env:
+          CONAN_HOME_BIN: ${{ steps.setup-conan.outputs.conan-home }}/bin
         run: |
           conan remote enable develop
           conan remote enable build
-          tools/determine_changes \
+          $CONAN_HOME_BIN/determine_changes \
             --debug \
             --conan-profile ${{ inputs.conan_profile }} \
             --scan-cache \
@@ -151,12 +153,14 @@ jobs:
             ${{ steps.configure-conan-storage.outputs.storage-path }}
 
       - name: Promote packages to integ
+        env:
+          CONAN_HOME_BIN: ${{ steps.setup-conan.outputs.conan-home }}/bin
         run: |
           conan remote enable integ
           conan remote enable build
           conan remote auth --force integ
           echo '${{ needs.generate-build-order-matrix.outputs.package-refs }}' > /tmp/package-refs.json
-          tools/promote_packages \
+          $CONAN_HOME_BIN/promote_packages \
             --debug \
             --package-refs-path /tmp/package-refs.json \
             --clean \
