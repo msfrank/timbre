@@ -87,7 +87,7 @@ jobs:
           conan remote enable develop
           conan remote enable build
           conan remote auth --force build
-          $CONAN_HOME_BIN/install_and_upload_package \
+          python3 $CONAN_HOME_BIN/install_and_upload_package \
             --debug \
             --conan-profile ${{ inputs.conan_profile }} \
             --clean \
