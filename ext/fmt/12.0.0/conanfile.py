@@ -17,7 +17,7 @@ class Fmt(ConanFile):
 {fmt} is an open-source formatting library providing a fast and safe alternative to C stdio and C++ iostreams.
 """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

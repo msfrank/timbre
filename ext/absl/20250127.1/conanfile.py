@@ -19,7 +19,7 @@ Abseil is an open source collection of C++ libraries drawn from the most fundame
 pieces of Google’s internal codebase.
     """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

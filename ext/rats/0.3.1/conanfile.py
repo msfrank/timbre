@@ -19,7 +19,7 @@ Enterprise-grade peer-to-peer networking library with advanced NAT traversal, en
 encryption, and publish-subscribe messaging.
     """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

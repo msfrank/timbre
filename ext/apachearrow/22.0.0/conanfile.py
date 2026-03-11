@@ -19,7 +19,7 @@ Apache Arrow is a software development platform for building high performance ap
 process and transport large data sets.
 """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

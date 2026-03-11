@@ -21,7 +21,7 @@ executing, or translating structured text or binary files. It's widely used to b
 tools, and frameworks. From a grammar, ANTLR generates a parser that can build and walk parse trees.
     """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

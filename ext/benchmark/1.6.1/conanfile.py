@@ -17,7 +17,7 @@ class Benchmark(ConanFile):
 A library to benchmark code snippets, similar to unit tests.
 """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

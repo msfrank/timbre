@@ -23,7 +23,7 @@ computer networks against eavesdropping, and identify the party at the other end
 is widely used by Internet servers, including the majority of HTTPS websites. 
     """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

@@ -21,7 +21,7 @@ RapidJSON is a JSON parser and generator for C++.
     no_copy_source = True
     package_type = "header-library"
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

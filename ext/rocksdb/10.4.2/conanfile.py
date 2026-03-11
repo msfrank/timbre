@@ -17,7 +17,7 @@ class Rocksdb(ConanFile):
 A Persistent Key-Value Store for Flash and RAM Storage.
 """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

@@ -21,7 +21,7 @@ Qt 6 lets you develop applications with intuitive user interfaces for multiple d
 and platforms, faster than ever before.
 """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

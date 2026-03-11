@@ -18,7 +18,7 @@ class Cares(ConanFile):
 c-ares is a C library for asynchronous DNS requests (including name resolves).
     """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

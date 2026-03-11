@@ -20,7 +20,7 @@ jemalloc is a general purpose malloc(3) implementation that emphasizes fragmenta
 and scalable concurrency support.
 """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 

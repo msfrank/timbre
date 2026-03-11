@@ -19,7 +19,7 @@ Protocol Buffers are language-neutral, platform-neutral extensible mechanisms fo
 structured data.
 """
 
-    # enforce full mode when resolving dependencies
+    revision_mode = "scm_folder"
     package_id_non_embed_mode = "full_mode"
     package_id_unknown_mode = "full_mode"
 
