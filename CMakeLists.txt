@@ -38,20 +38,19 @@ endif()
 
 set(DECLARED_PACKAGES "" CACHE INTERNAL "declared packages")
 
-function(declare_package_export PACKAGE_NAME PACKAGE_VERSION STAGE_NUMBER)
+function(declare_package_export PACKAGE_NAME PACKAGE_VERSION)
 
     # define cache variables for the declared package
     set(PACKAGE_NAME_AND_VERSION "${PACKAGE_NAME}_${PACKAGE_VERSION}")
     set(NAME_${PACKAGE_NAME_AND_VERSION} ${PACKAGE_NAME} CACHE INTERNAL "declared name for ${PACKAGE_NAME_AND_VERSION}")
     set(VERSION_${PACKAGE_NAME_AND_VERSION} ${PACKAGE_VERSION} CACHE INTERNAL "declared version for ${PACKAGE_NAME_AND_VERSION}")
-    set(STAGE_${PACKAGE_NAME_AND_VERSION} ${STAGE_NUMBER} CACHE INTERNAL "declared stage for ${PACKAGE_NAME_AND_VERSION}")
 
     # append the package id ( in '<name>_<version>' format) to DECLARED_PACKAGES
     set(declared_packages_list ${DECLARED_PACKAGES})
     list(APPEND declared_packages_list ${PACKAGE_NAME_AND_VERSION})
     set(DECLARED_PACKAGES ${declared_packages_list} CACHE INTERNAL "declared packages")
 
-    message(STATUS "declared package ${PACKAGE_NAME}-${PACKAGE_VERSION} (stage ${STAGE_NUMBER})")
+    message(STATUS "declared package ${PACKAGE_NAME}-${PACKAGE_VERSION}")
 
 endfunction()
 
@@ -177,7 +176,6 @@ foreach (PACKAGE_NAME_AND_VERSION ${DECLARED_PACKAGES})
 
     set(PACKAGE_NAME ${NAME_${PACKAGE_NAME_AND_VERSION}})
     set(PACKAGE_VERSION ${VERSION_${PACKAGE_NAME_AND_VERSION}})
-    set(STAGE_NUMBER ${STAGE_${PACKAGE_NAME_AND_VERSION}})
 
     if (${PACKAGE_${PACKAGE_NAME}})
         set(EXPORT_ERROR "package '${PACKAGE_NAME}' has already been exported with version ${PACKAGE_${PACKAGE_NAME}}")

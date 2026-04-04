@@ -43,7 +43,6 @@ process and transport large data sets.
 
         tc.extra_cxxflags.append('-Wno-deprecated-declarations')
 
-        tc.variables['CMAKE_CXX_STANDARD'] = '17'                   # force c++ 17
         tc.variables['CMAKE_INSTALL_LIBDIR'] = 'lib'                # force libdir to be 'lib' even on 64bit
         tc.variables['CMAKE_POSITION_INDEPENDENT_CODE'] = 'ON'      # force PIC
         tc.variables["CMAKE_FIND_PACKAGE_PREFER_CONFIG"] = 'ON'
@@ -59,7 +58,7 @@ process and transport large data sets.
         tc.cache_variables["ARROW_BUILD_SHARED"] = 'ON'
         tc.cache_variables["ARROW_BUILD_STATIC"] = 'OFF'
         tc.cache_variables["ARROW_BUILD_TESTS"] = 'OFF'
-        tc.cache_variables["ARROW_COMPUTE"] = 'ON'
+        tc.cache_variables["ARROW_COMPUTE"] = 'OFF'
         tc.cache_variables["ARROW_DATASET"] = 'ON'
         tc.cache_variables["ARROW_FILESYSTEM"] = 'ON'
         tc.cache_variables["ARROW_FLIGHT"] = 'OFF'
